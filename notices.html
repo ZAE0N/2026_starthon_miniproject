@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공지사항 | 한빛공업전문대학</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="page">
+  <div class="page-banner">
+    <div class="container">
+      <div class="breadcrumb">홈 &rsaquo; 정보광장 &rsaquo; 공지사항</div>
+      <h1>공지사항</h1>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+
+      <div class="tabbar">
+        <div class="tabs" id="tabs"></div>
+        <div class="total" id="total">총 <strong>0</strong>건</div>
+      </div>
+
+      <form class="searchbar" onsubmit="doSearch(event)">
+        <select id="scope" aria-label="검색 범위">
+          <option value="both">제목+내용</option>
+          <option value="title">제목</option>
+          <option value="content">내용</option>
+          <option value="author">작성자</option>
+        </select>
+        <input id="q" placeholder="검색어를 입력하세요" aria-label="검색어">
+        <button type="submit" class="btn btn-primary">검색</button>
+      </form>
+
+      <div class="filter-chip" id="filterChip">
+        <span class="label">AI 도우미가 적용한 조건</span>
+        <span id="chipTags" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+        <button class="clear" onclick="clearChip()">조건 해제 ✕</button>
+      </div>
+
+      <div id="tableWrap">
+        <div class="skeleton"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="pager-row">
+        <div class="pager" id="pager"></div>
+        <button class="btn btn-secondary admin-only" onclick="location.href='notice-form.html'">글쓰기</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat-engine.js"></script>
+<script src="js/notices.js"></script>
+</body>
+</html>

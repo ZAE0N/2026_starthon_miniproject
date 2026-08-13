@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공지 등록 | 한빛공업전문대학</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/detail.css">
+</head>
+<body>
+
+<div class="page">
+  <div class="page-banner">
+    <div class="container">
+      <div class="breadcrumb">홈 &rsaquo; 정보광장 &rsaquo; 공지사항</div>
+      <h1 id="pageTitle">공지 등록</h1>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      <form id="form" onsubmit="submitForm(event)">
+
+        <div class="form-head"><h2 id="formTitle">공지 등록</h2></div>
+
+        <div class="form-row">
+          <label for="category">카테고리<span class="req">*</span></label>
+          <div class="field">
+            <select id="category">
+              <option value="학사">학사</option>
+              <option value="행사">행사</option>
+              <option value="장학">장학</option>
+              <option value="채용">채용</option>
+              <option value="일반">일반</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" id="row-title">
+          <label for="title">제목<span class="req">*</span></label>
+          <div class="field">
+            <input type="text" id="title" maxlength="200" placeholder="공지 제목을 입력하세요">
+            <p class="hint">최대 200자</p>
+            <p class="err">제목을 입력해 주세요.</p>
+          </div>
+        </div>
+
+        <div class="form-row" id="row-author">
+          <label for="author">작성자<span class="req">*</span></label>
+          <div class="field">
+            <div class="inline">
+              <input type="text" id="author" maxlength="30" placeholder="이름">
+              <input type="text" id="department" maxlength="30" placeholder="부서 (예: 학생지원팀)">
+            </div>
+            <p class="err">작성자를 입력해 주세요.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="dueDate">마감일</label>
+          <div class="field">
+            <div class="inline">
+              <input type="date" id="dueDate">
+              <label class="check"><input type="checkbox" id="isPinned"> 목록 맨 위에 고정</label>
+            </div>
+            <p class="hint">마감일이 없으면 비워두세요.</p>
+          </div>
+        </div>
+
+        <div class="form-row" id="row-content">
+          <label for="content">내용<span class="req">*</span></label>
+          <div class="field">
+            <textarea id="content" maxlength="5000" placeholder="공지 내용을 입력하세요"></textarea>
+            <p class="hint">최대 5000자 · 줄바꿈은 그대로 유지됩니다</p>
+            <p class="err">내용을 입력해 주세요.</p>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-lg" onclick="history.back()">취소</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">등록하기</button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat-engine.js"></script>
+<script src="js/notice-form.js"></script>
+</body>
+</html>

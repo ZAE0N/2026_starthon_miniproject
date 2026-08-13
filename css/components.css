@@ -1,0 +1,311 @@
+/* ═══════════ CM-01 헤더 ═══════════ */
+.utilbar {
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-600);
+}
+.utilbar .container { display: flex; align-items: center; gap: 14px; padding-top: 9px; padding-bottom: 9px; }
+.utilbar .spacer { flex: 1; }
+
+.gnb { background: var(--navy-900); }
+.gnb .container { display: flex; align-items: center; gap: 40px; padding-top: 20px; padding-bottom: 20px; }
+
+.logo { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 19px; font-weight: 700; white-space: nowrap; }
+.logo .mark { width: 30px; height: 30px; border-radius: 50%; background: var(--cyan); flex: none; }
+
+.gnb-menu { display: flex; gap: 38px; margin-left: auto; flex-wrap: nowrap; }
+
+/* 챗봇이 열리면 본문이 좁아지므로 메뉴 간격을 줄인다 */
+body.chat-open .gnb .container { gap: 20px; }
+body.chat-open .gnb-menu { gap: 18px; }
+body.chat-open .gnb-menu a { font-size: 14px; }
+.gnb-menu a {
+  color: #fff; font-size: 15px; font-weight: 500;
+  padding-bottom: 6px; border-bottom: 2px solid transparent;
+}
+.gnb-menu a:hover { border-color: rgba(255,255,255,.4); }
+.gnb-menu a[aria-current="page"] { font-weight: 700; border-color: var(--cyan); }
+
+.gnb-search { margin-left: auto; color: #fff; font-size: 14px; font-weight: 500; }
+.gnb-toggle { display: none; color: #fff; font-size: 22px; line-height: 1; }
+
+/* ── 관리자 배지 ── */
+.admin-bar {
+  display: none;
+  background: var(--navy-700);
+  color: #fff;
+  font-size: 13px;
+}
+body.is-admin .admin-bar { display: block; }
+.admin-bar .container { display: flex; align-items: center; gap: 12px; padding-top: 8px; padding-bottom: 8px; }
+.admin-bar .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+.admin-bar button { font-size: 12px; text-decoration: underline; opacity: .85; }
+.admin-bar button:first-of-type { margin-left: auto; }
+
+.admin-only { display: none !important; }
+body.is-admin .admin-only { display: inline-flex !important; }
+
+/* ═══════════ CM-02 푸터 ═══════════ */
+.footer { background: var(--navy-900); color: #fff; margin-top: auto; }
+.footer .container { display: flex; align-items: center; gap: 20px; padding-top: 36px; padding-bottom: 36px; }
+.footer h2 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.footer p { font-size: 12px; color: var(--ink-400); }
+.footer .spacer { flex: 1; }
+.btn-admin {
+  border: 1px solid var(--ink-600); border-radius: var(--r-sm);
+  padding: 8px 14px; font-size: 12px; color: var(--ink-400); white-space: nowrap;
+}
+.btn-admin:hover { color: #fff; border-color: var(--ink-400); }
+
+/* ═══════════ 버튼 ═══════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 22px; border-radius: var(--r);
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+}
+.btn-primary { background: var(--navy-900); color: #fff; }
+.btn-primary:hover { background: var(--navy-700); }
+.btn-secondary { background: var(--navy-700); color: #fff; }
+.btn-ghost { border: 1px solid var(--line-strong); color: var(--ink-600); }
+.btn-ghost:hover { border-color: var(--ink-400); color: var(--ink-900); }
+.btn-danger { background: var(--red-soft); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-cyan { background: var(--cyan); color: #fff; }
+.btn-lg { padding: 13px 28px; font-size: 15px; }
+
+/* ═══════════ 배지 ═══════════ */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 500; white-space: nowrap; flex: none;
+}
+.badge-학사, .badge-채용 { background: var(--bg-tint); color: var(--navy-700); }
+.badge-행사 { background: var(--amber-soft); color: var(--amber); }
+.badge-장학 { background: var(--cyan-soft); color: var(--cyan); }
+.badge-일반 { background: var(--bg-soft); color: var(--ink-600); }
+.badge-due { background: var(--red-soft); color: var(--red); }
+.badge-pin { background: var(--amber-soft); color: var(--amber); }
+
+/* ═══════════ 카테고리 탭 ═══════════ */
+.tabbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab {
+  padding: 10px 20px; border-radius: var(--r-full);
+  background: var(--bg-soft); border: 1px solid var(--line);
+  font-size: 14px; color: var(--ink-600);
+}
+.tab:hover { border-color: var(--line-strong); }
+.tab[aria-selected="true"] { background: var(--navy-900); border-color: var(--navy-900); color: #fff; font-weight: 700; }
+.total { margin-left: auto; font-size: 14px; color: var(--ink-600); }
+.total strong { color: var(--navy-700); }
+
+/* ═══════════ 검색 바 ═══════════ */
+.searchbar {
+  display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+  background: var(--bg-soft); border-radius: var(--r); padding: 16px 20px; margin-bottom: 24px;
+}
+.searchbar select, .searchbar input {
+  border: 1px solid var(--line-strong); border-radius: var(--r);
+  background: #fff; padding: 11px 14px; font-size: 14px;
+}
+.searchbar input { width: 360px; max-width: 100%; }
+.searchbar input::placeholder { color: var(--ink-400); }
+
+/* ═══════════ 필터 칩 (챗봇 결과) ═══════════ */
+.filter-chip {
+  display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--cyan-soft); border-radius: var(--r);
+  padding: 12px 14px 12px 16px; margin-bottom: 20px;
+}
+.filter-chip.on { display: flex; }
+.filter-chip .label { font-size: 12px; font-weight: 500; color: var(--cyan); }
+.filter-chip .tag {
+  background: #fff; border-radius: var(--r-sm); padding: 4px 9px;
+  font-size: 12px; font-weight: 500; color: var(--navy-900);
+}
+.filter-chip .clear { margin-left: auto; font-size: 12px; color: var(--ink-600); text-decoration: underline; }
+
+/* ═══════════ 공지 표 ═══════════ */
+.notice-table { width: 100%; border-collapse: collapse; border-top: 2px solid var(--navy-900); }
+.notice-table th {
+  background: var(--bg-tint); padding: 14px 12px;
+  font-size: 13px; font-weight: 700; color: var(--navy-900);
+}
+.notice-table td { padding: 16px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.notice-table .c-title { text-align: left; }
+.notice-table .m-meta { display: none; }
+.notice-table .c-no { width: 70px; text-align: center; color: var(--ink-600); }
+.notice-table .c-author { width: 140px; text-align: center; color: var(--ink-600); }
+.notice-table .c-date { width: 110px; text-align: center; color: var(--ink-600); }
+.notice-table .c-views { width: 70px; text-align: center; color: var(--ink-400); }
+.notice-table tbody tr:hover { background: var(--bg-soft); }
+.notice-table tr.pinned { background: var(--bg-soft); }
+.notice-table tr.pinned .c-no { color: var(--amber); font-weight: 700; }
+.t-cell { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.t-cell .title { font-size: 15px; color: var(--ink-900); }
+.notice-table tr:hover .title { color: var(--navy-500); text-decoration: underline; }
+
+/* ═══════════ 페이지네이션 ═══════════ */
+.pager-row { position: relative; display: flex; align-items: center; margin-top: 32px; min-height: 44px; }
+.pager-row .btn { position: absolute; right: 0; top: 0; }
+.pager { display: flex; gap: 6px; margin: 0 auto; }
+.pager button {
+  width: 36px; height: 36px; border-radius: var(--r);
+  border: 1px solid var(--line); font-size: 13px; color: var(--ink-600); background: #fff;
+}
+.pager button:hover { border-color: var(--line-strong); }
+.pager button[aria-current="true"] { background: var(--navy-900); border-color: var(--navy-900); color: #fff; font-weight: 700; }
+.pager button:disabled { opacity: .35; cursor: default; }
+
+/* ═══════════ 빈 상태 / 로딩 ═══════════ */
+.empty { padding: 72px 20px; text-align: center; }
+.empty h3 { font-size: 17px; font-weight: 700; color: var(--navy-900); margin-bottom: 8px; }
+.empty p { font-size: 14px; color: var(--ink-600); margin-bottom: 20px; }
+
+.skeleton { display: grid; gap: 10px; padding: 20px 0; }
+.skeleton i {
+  display: block; height: 18px; border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--bg-soft), var(--line), var(--bg-soft));
+  background-size: 200% 100%; animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ═══════════ CM-05 토스트 ═══════════ */
+.toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 90; display: grid; gap: 8px; }
+body.chat-open .toast-wrap { right: calc(var(--chat-w) + 20px); }
+.toast {
+  background: var(--navy-900); color: #fff;
+  padding: 12px 18px; border-radius: var(--r); font-size: 14px;
+  box-shadow: var(--shadow-modal); animation: slidein .2s ease;
+}
+.toast.error { background: var(--red); }
+@keyframes slidein { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ═══════════ 모달 ═══════════ */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(15, 37, 68, .45);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal {
+  background: #fff; border-radius: var(--r-lg); width: 100%; max-width: 420px;
+  overflow: hidden; box-shadow: var(--shadow-modal);
+}
+.modal header { background: var(--navy-900); color: #fff; padding: 18px 24px; font-size: 16px; font-weight: 700; }
+.modal .body { padding: 24px; text-align: center; }
+.modal .body strong { display: block; font-size: 15px; margin-bottom: 8px; }
+.modal .body p { font-size: 13px; color: var(--ink-600); }
+.modal footer { display: flex; gap: 10px; justify-content: center; padding: 0 24px 24px; }
+
+/* ═══════════ CM-03 챗봇 ═══════════ */
+.fab {
+  position: fixed; right: 40px; bottom: 40px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--cyan); color: #fff;
+  padding: 16px 24px; border-radius: var(--r-full);
+  font-size: 15px; font-weight: 700; box-shadow: var(--shadow-fab);
+}
+body.chat-open .fab { display: none; }
+
+.chat {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 70;
+  width: var(--chat-w); background: var(--bg-base);
+  border-left: 1px solid var(--line); box-shadow: var(--shadow-panel);
+  display: none; flex-direction: column;
+}
+body.chat-open .chat { display: flex; }
+
+.chat-head { background: var(--navy-900); color: #fff; padding: 18px 20px 18px 24px; display: flex; align-items: center; gap: 12px; }
+.chat-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); }
+.chat-head h2 { font-size: 16px; font-weight: 700; }
+.chat-head p { font-size: 12px; color: var(--ink-400); }
+.chat-head .close { margin-left: auto; font-size: 20px; color: #fff; line-height: 1; }
+
+.chat-log { flex: 1; overflow-y: auto; background: var(--bg-soft); padding: 24px 20px; display: grid; gap: 16px; align-content: start; }
+
+.msg { max-width: 88%; padding: 11px 14px; font-size: 14px; line-height: 1.65; }
+.msg.user { justify-self: end; background: var(--navy-700); color: #fff; border-radius: 12px 12px 3px 12px; }
+.msg.ai { justify-self: start; background: #fff; border: 1px solid var(--line); border-radius: 12px 12px 12px 3px; }
+
+.sources { margin-top: 10px; display: grid; gap: 6px; }
+.sources .cap { font-size: 11px; font-weight: 500; color: var(--ink-400); }
+.src-card { display: block; background: var(--cyan-soft); border-radius: 7px; padding: 9px 11px; }
+.src-card b { display: block; font-size: 13px; font-weight: 500; color: var(--navy-900); }
+.src-card span { font-size: 11px; color: var(--ink-600); }
+
+.suggests { display: flex; flex-wrap: wrap; gap: 6px; }
+.suggests button {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--r-full); padding: 8px 13px; font-size: 13px; color: var(--ink-600);
+}
+.suggests button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.typing { display: flex; gap: 4px; align-items: center; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-400); animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; }
+.typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+
+.chat-input { display: flex; gap: 8px; align-items: center; padding: 16px 16px 20px; border-top: 1px solid var(--line); }
+.chat-input input {
+  flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg-soft);
+  border-radius: var(--r-full); padding: 12px 16px; font-size: 13px;
+}
+.chat-input button {
+  width: 44px; height: 44px; border-radius: 50%; flex: none;
+  background: var(--cyan); color: #fff; font-size: 13px;
+}
+
+/* ── 모바일에서 걸러진 결과로 이동하는 버튼 ── */
+.jump { display: none; }
+
+/* ═══════════ 반응형 ═══════════ */
+@media (max-width: 1180px) {
+  .gnb .container { gap: 20px; }
+  .gnb-menu { gap: 20px; }
+  .gnb-menu a { font-size: 14px; }
+}
+
+@media (max-width: 768px) {
+  .gnb-menu {
+    display: none; position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; gap: 0; background: var(--navy-700); z-index: 50;
+  }
+  .gnb-menu.open { display: flex; }
+  .gnb-menu a { padding: 15px var(--gutter); border-bottom: 1px solid rgba(255,255,255,.12); }
+  .gnb { position: relative; }
+  .gnb .container { gap: 16px; }
+  .gnb-toggle { display: block; margin-left: auto; }
+  .gnb-search { margin-left: 0; }
+  .logo { font-size: 16px; }
+  .logo .mark { width: 24px; height: 24px; }
+
+  /* 표 → 카드 */
+  .notice-table, .notice-table tbody, .notice-table tr, .notice-table td { display: block; width: 100%; }
+  .notice-table thead { display: none; }
+  .notice-table tr { padding: 16px 4px; border-bottom: 1px solid var(--line); }
+  .notice-table td { border: none; padding: 0; }
+  .notice-table .c-no { display: none; }
+  .notice-table .c-author, .notice-table .c-date, .notice-table .c-views { display: none; }
+  .notice-table .m-meta { display: block; font-size: 12px; color: var(--ink-400); }
+  .t-cell { margin-bottom: 6px; }
+  .t-cell .title { font-size: 15px; }
+
+  .searchbar input { width: 100%; }
+  .searchbar select { flex: none; }
+  .total { margin-left: 0; }
+
+  .footer .container { flex-direction: column; align-items: flex-start; gap: 16px; }
+
+  .pager-row { flex-direction: column; gap: 16px; }
+  .pager-row .btn { position: static; width: 100%; }
+  .fab { right: 20px; bottom: 20px; padding: 14px 20px; font-size: 14px; }
+  .chat { width: 100%; }
+  body.chat-open .toast-wrap { right: 20px; }
+  .jump {
+    display: block; width: 100%; text-align: center;
+    background: var(--cyan); color: #fff; border-radius: var(--r);
+    padding: 12px; font-size: 13px; font-weight: 500; margin-top: 10px;
+  }
+}

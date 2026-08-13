@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학교 안내 | 한빛공업전문대학</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  .doc { display: grid; grid-template-columns: 220px 1fr; gap: 48px; }
+  .side h2 { font-size: 19px; font-weight: 700; color: var(--navy-900); padding-bottom: 14px; border-bottom: 2px solid var(--navy-900); }
+  .side a { display: block; padding: 13px 12px; font-size: 14px; color: var(--ink-600); border-bottom: 1px solid var(--line); }
+  .side a:hover { background: var(--bg-soft); }
+  .side a[aria-current="page"] { background: var(--bg-tint); color: var(--navy-900); font-weight: 700; }
+  .doc-main h2 { font-size: 26px; font-weight: 700; color: var(--navy-900); padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .doc-body { padding-top: 24px; font-size: 15px; line-height: 1.95; white-space: pre-wrap; }
+  @media (max-width: 900px) {
+    .doc { grid-template-columns: 1fr; gap: 28px; }
+    .side { display: flex; gap: 8px; overflow-x: auto; }
+    .side h2 { display: none; }
+    .side a { border: 1px solid var(--line); border-radius: var(--r-full); padding: 8px 14px; white-space: nowrap; }
+    .doc-main h2 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-banner">
+    <div class="container">
+      <div class="breadcrumb" id="crumb">홈</div>
+      <h1 id="menuTitle">학교 안내</h1>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container" id="wrap"></div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat-engine.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var slug = qs("slug") || "greeting";
+  var doc = window.PAGES.find(function (p) { return p.slug === slug; });
+
+  mountLayout(doc ? doc.menu : null);
+
+  if (!doc) {
+    $("#wrap").innerHTML =
+      '<div class="empty"><h3>요청하신 문서를 찾을 수 없습니다</h3>' +
+      "<p>주소가 잘못되었거나 삭제된 문서입니다.</p>" +
+      '<a class="btn btn-primary" href="index.html">홈으로 가기</a></div>';
+    return;
+  }
+
+  document.title = doc.title + " | 한빛공업전문대학";
+  $("#menuTitle").textContent = doc.menu;
+  $("#crumb").textContent = "홈 › " + doc.menu + " › " + doc.title;
+
+  var sibs = window.PAGES.filter(function (p) { return p.menu === doc.menu; });
+
+  $("#wrap").innerHTML =
+    '<div class="doc">' +
+      '<nav class="side"><h2>' + esc(doc.menu) + "</h2>" +
+        sibs.map(function (p) {
+          return '<a href="page.html?slug=' + p.slug + '"' +
+            (p.slug === slug ? ' aria-current="page"' : "") + ">" + esc(p.title) + "</a>";
+        }).join("") +
+      "</nav>" +
+      '<article class="doc-main"><h2></h2><div class="doc-body"></div></article>' +
+    "</div>";
+
+  $(".doc-main h2").textContent = doc.title;
+  $(".doc-body").textContent = doc.body;
+});
+</script>
+</body>
+</html>

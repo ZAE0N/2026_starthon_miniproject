@@ -1,0 +1,64 @@
+/* SC-03 상세 · SC-04 작성/수정 */
+
+.detail-head { border-top: 2px solid var(--navy-900); padding: 28px 4px 20px; }
+.detail-head .badge { margin-bottom: 12px; }
+.detail-head h2 { font-size: 24px; font-weight: 700; line-height: 1.45; margin-bottom: 14px; }
+.meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--ink-600); }
+.meta .sep { color: var(--line-strong); }
+
+.detail-body {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 32px 4px;
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-wrap;   /* 줄바꿈 유지. innerHTML 대신 textContent 를 씁니다 */
+}
+
+.siblings { border-bottom: 1px solid var(--line); }
+.siblings a, .siblings span.none {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 4px; font-size: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.siblings > :last-child { border-bottom: none; }
+.siblings .dir { width: 64px; flex: none; color: var(--ink-400); font-size: 13px; }
+.siblings a:hover .t { color: var(--navy-500); text-decoration: underline; }
+.siblings .none { color: var(--ink-400); }
+
+.detail-actions { display: flex; align-items: center; gap: 10px; margin-top: 28px; }
+.detail-actions .right { margin-left: auto; display: flex; gap: 10px; }
+
+/* ── SC-04 폼 ── */
+.form-head { border-top: 2px solid var(--navy-900); background: var(--bg-tint); padding: 20px 24px; }
+.form-head h2 { font-size: 20px; font-weight: 700; color: var(--navy-900); }
+
+.form-row { display: flex; gap: 20px; padding: 20px 24px; border-bottom: 1px solid var(--line); align-items: flex-start; }
+.form-row > label { width: 110px; flex: none; padding-top: 10px; font-size: 14px; font-weight: 500; }
+.form-row .req { color: var(--red); margin-left: 3px; }
+.form-row .field { flex: 1; min-width: 0; }
+
+.form-row input[type=text], .form-row input[type=date], .form-row select, .form-row textarea {
+  width: 100%; border: 1px solid var(--line-strong); border-radius: var(--r);
+  padding: 11px 14px; font-size: 14px; background: #fff;
+}
+.form-row textarea { min-height: 260px; resize: vertical; line-height: 1.8; }
+.form-row .inline { display: flex; gap: 12px; flex-wrap: wrap; }
+.form-row .inline > * { flex: 1; min-width: 160px; }
+.form-row .check { display: flex; align-items: center; gap: 8px; font-size: 14px; padding-top: 10px; }
+.hint { font-size: 12px; color: var(--ink-400); margin-top: 6px; }
+.err { font-size: 12px; color: var(--red); margin-top: 6px; display: none; }
+.invalid input, .invalid textarea { border-color: var(--red); }
+.invalid .err { display: block; }
+
+.form-actions { display: flex; justify-content: center; gap: 10px; padding: 28px 0; }
+
+@media (max-width: 768px) {
+  .detail-head h2 { font-size: 19px; }
+  .detail-body { padding: 24px 4px; font-size: 14px; }
+  .form-row { flex-direction: column; gap: 8px; padding: 16px; }
+  .form-row > label { width: auto; padding-top: 0; }
+  .detail-actions { flex-wrap: wrap; }
+  .detail-actions .right { margin-left: 0; width: 100%; }
+  .detail-actions .right .btn { flex: 1; }
+}

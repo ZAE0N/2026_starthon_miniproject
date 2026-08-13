@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>통합 검색 | 한빛공업전문대학</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<style>
+  .grp { margin-top: 36px; }
+  .grp h3 {
+    font-size: 15px; font-weight: 700; color: var(--navy-900);
+    padding-bottom: 12px; border-bottom: 2px solid var(--navy-900);
+  }
+  .grp h3 span { color: var(--cyan); margin-left: 6px; }
+  .grp li a { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 15px 4px; border-bottom: 1px solid var(--line); }
+  .grp li a:hover .t { color: var(--navy-500); text-decoration: underline; }
+  .grp .path { font-size: 13px; color: var(--ink-400); }
+  .grp .d { margin-left: auto; font-size: 13px; color: var(--ink-400); }
+  .grp .more { display: inline-block; margin-top: 14px; font-size: 13px; color: var(--navy-500); text-decoration: underline; }
+  .result-head { font-size: 20px; font-weight: 700; color: var(--navy-900); margin-top: 28px; }
+  .result-head em { color: var(--cyan); font-style: normal; }
+  @media (max-width: 768px) { .grp .d { margin-left: 0; width: 100%; } }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-banner">
+    <div class="container">
+      <div class="breadcrumb">홈 &rsaquo; 통합 검색</div>
+      <h1>통합 검색</h1>
+    </div>
+  </div>
+
+  <main class="section">
+    <div class="container">
+      <form class="searchbar" onsubmit="doSearch(event)">
+        <input id="q" placeholder="찾고 싶은 내용을 입력하세요" aria-label="검색어">
+        <button type="submit" class="btn btn-primary">검색</button>
+      </form>
+      <div id="result"></div>
+    </div>
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat-engine.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>

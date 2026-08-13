@@ -1,0 +1,65 @@
+/* 한빛공업전문대학 — 디자인 토큰
+   Figma 변수 컬렉션 "한빛 디자인 토큰" 과 1:1 대응합니다.
+   색상은 반드시 여기서만 정의하고, 다른 파일에서 hex 값을 직접 쓰지 마세요. */
+
+:root {
+  /* 베이스 */
+  --bg-base: #ffffff;
+  --bg-soft: #f7f9fc;
+  --bg-tint: #edf3fa;
+
+  /* 네이비 (주조색) */
+  --navy-900: #0f2544;
+  --navy-700: #163a66;
+  --navy-500: #2c6bb5;
+
+  /* 텍스트 */
+  --ink-900: #16191d;
+  --ink-600: #5a6572;
+  --ink-400: #8b95a3;
+
+  /* 라인 */
+  --line: #e3e8ef;
+  --line-strong: #c9d2de;
+
+  /* 포인트 3색 — 역할이 정해져 있습니다. 아껴 쓰세요.
+     cyan  : AI 챗봇, 장학
+     red   : 마감임박, 삭제
+     amber : 행사, 상단고정 */
+  --cyan: #0aa2c0;
+  --cyan-soft: #e1f5f9;
+  --red: #dc3a45;
+  --red-soft: #fdecec;
+  --amber: #d9860f;
+  --amber-soft: #fdf3e2;
+
+  /* 간격 */
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+  --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px;
+  --s12: 48px; --s16: 64px;
+
+  /* 형태 */
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 12px;
+  --r-full: 999px;
+
+  /* 레이아웃 */
+  --container: 1280px;
+  --gutter: 40px;
+  --chat-w: 400px;
+
+  /* 그림자 */
+  --shadow-fab: 0 6px 18px rgba(15, 37, 68, 0.28);
+  --shadow-panel: -4px 0 24px rgba(15, 37, 68, 0.08);
+  --shadow-modal: 0 20px 50px rgba(15, 37, 68, 0.24);
+
+  /* 타이포 */
+  --font: "Pretendard", "Noto Sans KR", -apple-system, "Malgun Gothic", sans-serif;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --gutter: 20px;
+  }
+}

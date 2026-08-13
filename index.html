@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한빛공업전문대학</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+
+<div class="page">
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">HANBIT COLLEGE</p>
+      <h1>그 젊음의 앞이<br>늘 당당할 수 있도록</h1>
+      <p class="sub">실무 중심 교육으로 함께 성장하는 한빛공업전문대학</p>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="sec-head">
+        <h2>공지사항</h2>
+        <div class="sec-actions">
+          <a class="pill" href="notices.html?category=학사">학사</a>
+          <a class="pill" href="notices.html?category=행사">행사</a>
+          <a class="pill" href="notices.html?category=장학">장학</a>
+          <a class="pill on" href="notices.html">전체보기 →</a>
+        </div>
+      </div>
+      <ul class="home-list" id="homeList"></ul>
+
+      <div class="tiles">
+        <a class="tile t-navy" href="page.html?slug=calendar">
+          <span class="ico"></span><b>학사일정</b><span>이번 학기 주요 일정</span></a>
+        <a class="tile t-navy" href="page.html?slug=forms">
+          <span class="ico"></span><b>증명 발급</b><span>재학 · 성적 증명서</span></a>
+        <a class="tile t-cyan" href="page.html?slug=campus">
+          <span class="ico"></span><b>도서관</b><span>자료 검색과 열람실</span></a>
+        <a class="tile t-amber" href="notices.html?category=채용">
+          <span class="ico"></span><b>취업지원</b><span>채용 정보와 상담</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/common.js"></script>
+<script src="js/chat-engine.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  mountLayout(null);
+  var top = window.NOTICES.slice().sort(function (a, b) {
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+    return a.createdAt < b.createdAt ? 1 : -1;
+  }).slice(0, 6);
+
+  document.getElementById("homeList").innerHTML = top.map(function (n) {
+    return '<li><a href="notice.html?id=' + n.id + '">' +
+      '<span class="badge badge-' + n.category + '">' + n.category + "</span>" +
+      '<span class="t">' + esc(n.title) + "</span>" +
+      dueBadge(n.dueDate) +
+      '<span class="d">' + n.createdAt + "</span></a></li>";
+  }).join("");
+});
+</script>
+</body>
+</html>
