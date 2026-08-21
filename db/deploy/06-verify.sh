@@ -7,14 +7,14 @@ q() { rsh "$M -e \"$1\""; }
 
 say "① 테이블 목록"
 q "SHOW TABLES;" | sed 's/^/   /'
-echo "   설계서 기준: notices, academic_events, pages, chat_cache (4개)"
+echo "   기준: notices, academic_events, pages, chat_cache (4개)"
 
 say "② 테이블 문자셋  ★ utf8mb4 여야 합니다"
 q "SELECT table_name, table_collation FROM information_schema.tables WHERE table_schema='$DB_NAME';" | sed 's/^/   /'
 
 say "③ 건수"
 q "SELECT (SELECT COUNT(*) FROM notices) AS notices, (SELECT COUNT(*) FROM academic_events) AS events, (SELECT COUNT(*) FROM pages) AS pages;" | sed 's/^/   /'
-echo "   설계서 기준: 66 / 33 / 19"
+echo "   기준: 71 / 33 / 20"
 
 say "④ 한글 깨짐  ★ 가장 중요"
 q "SELECT id, title FROM notices LIMIT 3;" | sed 's/^/   /'
@@ -25,7 +25,7 @@ q "SELECT category, COUNT(*) AS cnt FROM notices GROUP BY category;" | sed 's/^/
 
 say "⑥ 장학 하위 분류"
 q "SELECT COALESCE(sub_category,'(일반)') AS sub, COUNT(*) AS cnt FROM notices WHERE category='장학' GROUP BY sub;" | sed 's/^/   /'
-echo "   설계서 기준: 근로 6건, 일반 11건"
+echo "   기준: 근로 6건, 일반(NULL) 12건"
 
 say "⑦ CHECK 제약 동작 확인 (잘못된 INSERT 를 거부해야 정상)"
 if rsh "$M -e \"INSERT INTO notices (category, sub_category, title, content, author, created_at) VALUES ('학사','근로','__CHECK_TEST__','test','test',NOW());\"" 2>/dev/null; then
@@ -43,7 +43,7 @@ echo "   [기숙사 관련]"
 q "SELECT COUNT(*) AS cnt FROM notices WHERE title LIKE '%기숙사%' OR content LIKE '%기숙사%';" | sed 's/^/      /'
 
 echo
-warn "팀원 덤프는 더미 5건짜리 초안입니다. ③⑥⑦⑧ 이 기준과 다른 것이 정상입니다."
-warn "seed 교체는 별도 작업으로 진행합니다."
+echo "   기준값은 db/seed.sql (js/data.js 에서 생성) 기준입니다."
+echo "   데이터를 바꿨다면 python3 db/tools/gen_seed.py 로 seed 를 다시 만드세요."
 echo
 echo "   다음: ./07-appuser.sh"
