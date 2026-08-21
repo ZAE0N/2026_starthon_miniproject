@@ -3,32 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>공지 상세 | 인하공업전문대학</title>
+<title>학사일정 | 인하공업전문대학</title>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/detail.css">
+<link rel="stylesheet" href="css/calendar.css">
 </head>
 <body>
 
 <div class="page">
   <div class="page-banner">
     <div class="container">
-      <div class="breadcrumb">홈 &rsaquo; 정보광장 &rsaquo; 공지사항</div>
-      <h1>공지사항</h1>
+      <div class="breadcrumb">홈 &rsaquo; 학사안내 &rsaquo; 학사일정</div>
+      <h1>학사일정</h1>
     </div>
   </div>
 
   <main class="section">
-    <div class="container" id="wrap">
-      <div class="skeleton"><i></i><i></i><i></i><i></i></div>
+    <div class="container">
+      <div id="calMount"></div>
     </div>
   </main>
 </div>
 
 <script src="js/data.js"></script>
 <script src="js/common.js"></script>
+<script src="js/calendar.js"></script>
 <script src="js/chat-engine.js"></script>
-<script src="js/notice.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  mountLayout("학사안내");
+  mountCalendar(document.getElementById("calMount"));
+});
+</script>
 </body>
 </html>

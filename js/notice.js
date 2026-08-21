@@ -37,7 +37,7 @@ function render() {
   if (!n) { notFound(); return; }
   current = n;
   bumpViews(n);
-  document.title = n.title + " | 한빛공업전문대학";
+  document.title = n.title + " | 인하공업전문대학";
 
   var sib = siblings(id);
   var d = daysLeft(n.dueDate);
@@ -45,7 +45,7 @@ function render() {
   $("#wrap").innerHTML =
     '<article>' +
       '<div class="detail-head">' +
-        '<span class="badge badge-' + n.category + '">' + n.category + "</span>" +
+        catBadges(n) +
         "<h2></h2>" +
         '<div class="meta">' +
           '<span class="m-author"></span>' +

@@ -1,13 +1,11 @@
-/* 모든 화면이 공유하는 것: 헤더, 푸터, 관리자 모드, 토스트, 챗봇 패널 */
+/* 모든 화면이 공유하는 것: 헤더, 푸터, 관리자 모드, 토스트, 모달, 챗봇 */
 
-/* ── 프로토타입용 저장 계층 ──
-   실제 프로젝트에서는 백엔드 + DB 가 이 역할을 합니다.
-   여기서는 브라우저 탭 안에서만 유지되며, 탭을 닫으면 초기 데이터로 돌아갑니다. */
+/* ── 프로토타입용 저장 계층 ── */
 (function () {
   try {
     var saved = sessionStorage.getItem("notices");
     if (saved) window.NOTICES = JSON.parse(saved);
-  } catch (e) { /* file:// 등에서 막히면 메모리만 사용 */ }
+  } catch (e) {}
 })();
 
 function saveNotices() {
@@ -24,29 +22,39 @@ function $(s, r) { return (r || document).querySelector(s); }
 function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
 function qs(name) { return new URLSearchParams(location.search).get(name); }
 
-/* innerHTML 로 본문을 넣으면 사용자가 넣은 스크립트가 실행됩니다.
-   본문·제목처럼 사용자가 입력한 값은 반드시 이 함수를 거치거나 textContent 를 쓰세요. */
+/* 사용자가 입력한 값은 반드시 이 함수를 거치거나 textContent 를 쓰세요 */
 function esc(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-var TODAY = new Date("2026-08-12");
+var TODAY = "2026-08-20";
+function today() { return TODAY; }
 function daysLeft(due) {
   if (!due) return null;
-  return Math.ceil((new Date(due) - TODAY) / 86400000);
+  return Math.round((new Date(due) - new Date(TODAY)) / 86400000);
 }
 function dueBadge(due) {
   var d = daysLeft(due);
   if (d === null || d < 0 || d > 7) return "";
   return '<span class="badge badge-due">마감 D-' + d + "</span>";
 }
-function fmtShort(d) { return d ? d.slice(5) : ""; }
+
+/* 하위 분류가 있으면 배지를 두 겹으로 표시합니다 */
+function catBadges(n) {
+  var html = '<span class="badge badge-' + n.category + '">' + n.category + "</span>";
+  if (n.subCategory) html += '<span class="badge badge-sub">' + esc(n.subCategory) + "</span>";
+  return html;
+}
 
 /* ── CM-01 헤더 ── */
 function renderHeader(current) {
   var menus = window.GNB.map(function (g) {
+    if (g.external) {
+      return '<a href="' + window.EXTERNAL[g.external] + '" target="_blank" rel="noopener noreferrer" class="ext">' +
+             g.menu + '<span class="ext-mark">↗</span></a>';
+    }
     var href = g.slug ? "page.html?slug=" + g.slug : "notices.html";
     var on = current === g.menu ? ' aria-current="page"' : "";
     return '<a href="' + href + '"' + on + ">" + g.menu + "</a>";
@@ -57,7 +65,7 @@ function renderHeader(current) {
       "<span>PORTAL</span><span>ENGLISH</span><span class=\"spacer\"></span><span>사이트맵</span>" +
     "</div></div>" +
     '<header class="gnb"><div class="container">' +
-      '<a class="logo" href="index.html"><span class="mark"></span>한빛공업전문대학</a>' +
+      '<a class="logo" href="index.html"><span class="mark"></span>' + window.SCHOOL.name + "</a>" +
       '<nav class="gnb-menu" id="gnbMenu">' + menus + "</nav>" +
       '<a class="gnb-search" href="search.html">검색</a>' +
       '<button class="gnb-toggle" id="gnbToggle" aria-label="메뉴 열기">☰</button>' +
@@ -74,9 +82,9 @@ function renderHeader(current) {
 function renderFooter() {
   return (
     '<footer class="footer"><div class="container">' +
-      "<div><h2>한빛공업전문대학</h2>" +
-      "<p>인천광역시 미추홀구 한빛로 100 &nbsp;|&nbsp; 대표전화 032-000-0000</p>" +
-      "<p>© 2026 HANBIT College. 학습용 가상 사이트입니다.</p></div>" +
+      "<div><h2>" + window.SCHOOL.name + "</h2>" +
+      "<p>" + window.SCHOOL.address + " &nbsp;|&nbsp; 대표전화 " + window.SCHOOL.tel + "</p>" +
+      "<p>학습 목적으로 만든 비공식 사이트이며, 공지 내용은 실제 공지가 아닌 예시입니다.</p></div>" +
       '<span class="spacer"></span>' +
       '<button class="btn-admin" onclick="adminOn()">관리자</button>' +
     "</div></footer>"
@@ -107,7 +115,28 @@ function toast(msg, isError) {
   setTimeout(function () { el.remove(); }, 3000);
 }
 
-/* ── 확인 모달 (SC-05) ── */
+/* ── 공용 모달 ── */
+function openModal(title, bodyHtml, opts) {
+  opts = opts || {};
+  var bg = document.createElement("div");
+  bg.className = "modal-bg" + (opts.wide ? " wide" : "");
+  bg.innerHTML =
+    '<div class="modal" role="dialog" aria-modal="true">' +
+      '<header>' + esc(title) + '<button class="x" data-close aria-label="닫기">✕</button></header>' +
+      '<div class="modal-body">' + bodyHtml + "</div>" +
+    "</div>";
+  function close() { bg.remove(); document.removeEventListener("keydown", onKey); }
+  function onKey(e) { if (e.key === "Escape") close(); }
+  bg.addEventListener("click", function (e) {
+    if (e.target === bg || e.target.hasAttribute("data-close")) close();
+  });
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(bg);
+  if (opts.onOpen) opts.onOpen(bg);
+  return bg;
+}
+
+/* ── SC-05 삭제 확인 ── */
 function confirmModal(title, strong, desc, onOk) {
   var bg = document.createElement("div");
   bg.className = "modal-bg";
@@ -128,10 +157,18 @@ function confirmModal(title, strong, desc, onOk) {
   document.body.appendChild(bg);
 }
 
+/* ── SC-09 학사일정 달력 모달 ── */
+function openCalendar() {
+  openModal("학사일정", '<div id="calMount"></div>', {
+    wide: true,
+    onOpen: function () { mountCalendar($("#calMount")); },
+  });
+}
+
 /* ═══════════ CM-03 챗봇 ═══════════ */
 var SUGGESTS = [
   "이번 주 마감인 장학금 알려줘",
-  "수강신청 언제야?",
+  "근로장학금 공고 있어?",
   "취업 관련 공지 보여줘",
   "기숙사 얘기 있어?",
 ];
@@ -141,7 +178,7 @@ function renderChat() {
     '<button class="fab" onclick="chatOpen()">AI 도우미</button>' +
     '<aside class="chat" aria-label="AI 공지 도우미">' +
       '<div class="chat-head"><span class="dot"></span>' +
-        "<div><h2>한빛 AI</h2><p>공지 도우미</p></div>" +
+        "<div><h2>인하 AI</h2><p>공지 도우미</p></div>" +
         '<button class="close" onclick="chatClose()" aria-label="닫기">✕</button></div>' +
       '<div class="chat-log" id="chatLog"></div>' +
       '<form class="chat-input" onsubmit="chatSend(event)">' +
@@ -160,7 +197,7 @@ function chatOpen() {
 function chatClose() { document.body.classList.remove("chat-open"); }
 
 function chatGreet() {
-  addAI("공지사항에 대해 물어보세요. 답변과 함께 아래 목록을 걸러 드립니다.");
+  addAI("공지사항에 대해 물어보세요. 답변과 함께 왼쪽 화면을 결과로 바꿔 드립니다.");
   var box = document.createElement("div");
   box.className = "suggests";
   box.innerHTML = SUGGESTS.map(function (s) { return "<button>" + esc(s) + "</button>"; }).join("");
@@ -212,42 +249,57 @@ function chatSend(e) {
   ask(v);
 }
 
+function filterToQuery(a) {
+  var p = new URLSearchParams();
+  if (a.category) p.set("category", a.category);
+  if (a.subCategory) p.set("sub", a.subCategory);
+  if (a.keyword) p.set("q", a.keyword);
+  if (a.dueBefore) p.set("dueBefore", a.dueBefore);
+  return p.toString();
+}
+
+/* 화면정의서 2-5 — 지금 어느 화면에 있느냐에 따라 동작이 다릅니다 */
 function ask(text) {
   $$(".suggests").forEach(function (n) { n.remove(); });
   addUser(text);
   var t = addTyping();
+
   setTimeout(function () {
     t.remove();
     var res = window.chatAnswer(text);
     var el = addAI(res.answer, res.sources);
-    if (res.action && res.action.type === "filter" && typeof window.applyChatFilter === "function") {
-      var n = window.applyChatFilter(res.action);
+    var a = res.action;
+
+    if (a.type === "navigate") { location.href = "notice.html?id=" + a.noticeId; return; }
+    if (a.type !== "filter") return;
+
+    /* 이 화면이 목록을 직접 바꿀 수 있는가 (홈 · 공지 목록) */
+    if (typeof window.applyChatFilter === "function") {
+      var n = window.applyChatFilter(a);
       var jump = document.createElement("button");
-      jump.className = "jump";
+      jump.className = "jump jump-mobile";
       jump.textContent = "공지 " + n + "건으로 좁혔습니다 →";
       jump.onclick = chatClose;
       el.appendChild(jump);
+      return;
     }
-    if (res.action && res.action.type === "filter" && typeof window.applyChatFilter !== "function") {
-      var go = document.createElement("a");
-      go.className = "jump";
-      go.style.display = "block";
-      go.href = "notices.html?" + filterToQuery(res.action);
-      go.textContent = "공지 목록에서 결과 보기 →";
-      el.appendChild(go);
-    }
-    if (res.action && res.action.type === "navigate") {
-      location.href = "notice.html?id=" + res.action.noticeId;
-    }
-  }, 700);
-}
 
-function filterToQuery(a) {
-  var p = new URLSearchParams();
-  if (a.category) p.set("category", a.category);
-  if (a.keyword) p.set("q", a.keyword);
-  if (a.dueBefore) p.set("dueBefore", a.dueBefore);
-  return p.toString();
+    /* 작성 화면에서는 쓰던 글이 날아가지 않게 이동하지 않습니다 */
+    if (window.CHAT_NO_NAVIGATE) {
+      var note = document.createElement("div");
+      note.className = "chat-note";
+      note.textContent = "작성 중에는 화면을 이동하지 않습니다. 저장하거나 취소한 뒤 다시 물어보세요.";
+      el.appendChild(note);
+      return;
+    }
+
+    /* 그 밖의 화면에서는 공지 목록으로 이동하면서 조건을 적용합니다 */
+    var go = document.createElement("a");
+    go.className = "jump";
+    go.href = "notices.html?" + filterToQuery(a);
+    go.textContent = "공지 목록에서 결과 보기 →";
+    el.appendChild(go);
+  }, 700);
 }
 
 /* ── 페이지 조립 ── */
