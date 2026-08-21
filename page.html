@@ -40,10 +40,11 @@
 </div>
 
 <script src="js/data.js"></script>
+<script src="js/api.js"></script>
 <script src="js/common.js"></script>
 <script src="js/chat-engine.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+onDataReady(function () {
   var slug = qs("slug") || "greeting";
   var doc = window.PAGES.find(function (p) { return p.slug === slug; });
 

@@ -16,6 +16,9 @@ function bumpViews(n) {
   sessionStorage.setItem(key, "1");
   n.views += 1;
   saveNotices();
+  /* 서버가 있으면 거기에도 반영합니다. 실패해도 화면은 이미 올라간 뒤라
+     조회수 하나 때문에 사용자에게 오류를 보여줄 필요는 없습니다. */
+  Api.bumpViews(n.id).catch(function () {});
 }
 
 function siblings(id) {
@@ -89,15 +92,19 @@ function render() {
 
 function askDelete() {
   confirmModal("공지를 삭제할까요?", current.title, "삭제한 공지는 되돌릴 수 없습니다.", function () {
-    var i = window.NOTICES.findIndex(function (x) { return x.id === current.id; });
-    window.NOTICES.splice(i, 1);
-    saveNotices();
-    sessionStorage.setItem("flash", "삭제되었습니다");
-    location.href = backHref();
+    Api.deleteNotice(current.id)
+      .then(function () {
+        var i = window.NOTICES.findIndex(function (x) { return x.id === current.id; });
+        window.NOTICES.splice(i, 1);
+        saveNotices();
+        sessionStorage.setItem("flash", "삭제되었습니다");
+        location.href = backHref();
+      })
+      .catch(function () { toast("삭제하지 못했습니다. 잠시 후 다시 시도해 주세요", true); });
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+onDataReady(function () {
   mountLayout("정보광장");
   setTimeout(render, 250);
 });
