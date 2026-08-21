@@ -30,5 +30,14 @@ confirm() {
   case "$a" in y|Y|yes) : ;; *) echo "중단합니다."; exit 1 ;; esac
 }
 
-# 서버에서 명령 실행
-rsh() { ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SERVER_IP" "$@"; }
+# 서버에서 명령 실행.
+# -n 으로 stdin 을 끊습니다. 이게 없으면 ssh 가 스크립트의 stdin 을 먹어버려서
+# 뒤따르는 confirm 프롬프트가 입력을 못 받습니다.
+rsh()   { ssh -n -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SERVER_IP" "$@"; }
+
+# stdin 을 서버로 넘겨야 할 때 (heredoc 으로 파일이나 SQL 을 보낼 때)
+rshin() { ssh    -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new "$SSH_USER@$SERVER_IP" "$@"; }
+
+# 우리가 추가하는 MySQL 설정 파일.
+# 배포판 기본 파일(mysqld.cnf)을 건드리지 않고, 알파벳 순으로 나중에 읽혀 값을 덮어씁니다.
+MYCNF=/etc/mysql/mysql.conf.d/zz-inhatc.cnf

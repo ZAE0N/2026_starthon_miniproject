@@ -56,4 +56,4 @@ cat <<BOX
 
 BOX
 
-echo "   다음: ./07-network.sh"
+echo "   다음: ./08-network.sh"

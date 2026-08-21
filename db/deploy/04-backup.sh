@@ -26,4 +26,4 @@ SIZE=$(rsh "stat -c %s ~/db/backup_${DB_NAME}_${STAMP}.sql")
 ok "백업 완료 (${SIZE} bytes) — ~/db/backup_${DB_NAME}_${STAMP}.sql"
 
 echo
-echo "   다음: ./04-import.sh"
+echo "   다음: ./05-import.sh"

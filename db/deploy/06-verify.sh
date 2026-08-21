@@ -46,4 +46,4 @@ echo
 warn "팀원 덤프는 더미 5건짜리 초안입니다. ③⑥⑦⑧ 이 기준과 다른 것이 정상입니다."
 warn "seed 교체는 별도 작업으로 진행합니다."
 echo
-echo "   다음: ./06-appuser.sh"
+echo "   다음: ./07-appuser.sh"

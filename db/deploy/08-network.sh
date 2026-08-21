@@ -1,50 +1,50 @@
 #!/usr/bin/env bash
-# 단계 8 ①② — MySQL bind-address 와 서버 방화벽. ③ 콘솔 작업은 안내만 합니다.
+# 단계 8 ①② — 외부 접속 허용. ③ Lightsail 콘솔 작업은 안내만 합니다.
 . "$(dirname "$0")/_common.sh"
-
-CNF=/etc/mysql/mysql.conf.d/mysqld.cnf
 
 say "내 공인 IP 확인"
 MYIP=$(curl -s https://ifconfig.me || curl -s https://api.ipify.org)
 [ -n "$MYIP" ] || die "공인 IP 를 알아내지 못했습니다"
 ok "$MYIP"
 
-say "① MySQL bind-address"
-rsh "grep -n 'bind-address\|default-time-zone' $CNF || echo '   (설정 없음)'" | sed 's/^/   /'
-warn "bind-address 를 0.0.0.0 으로 바꾸면 MySQL 이 외부 요청을 받기 시작합니다."
-warn "반드시 아래 ②③ 방화벽으로 IP 를 제한한 상태에서만 쓰세요."
-confirm "bind-address 를 0.0.0.0 으로 바꾸고 시간대를 +09:00 으로 설정할까요?"
+say "① MySQL 이 외부 요청을 받도록 (bind-address)"
+echo "   현재 대기 주소:"
+rsh "sudo ss -tlnp | grep 3306 || echo '(3306 대기 없음)'" | sed 's/^/      /'
+echo
+echo "   02 가 만든 $MYCNF 에 bind-address 를 추가합니다."
+echo "   배포판 기본 파일(mysqld.cnf)의 127.0.0.1 을 덮어씁니다."
+warn "이 설정 이후 MySQL 이 외부 요청을 받기 시작합니다."
+warn "아래 ②③ 방화벽으로 IP 를 제한한 상태에서만 쓰세요."
+confirm "진행할까요?"
 
-rsh "sudo cp $CNF ${CNF}.bak.\$(date +%Y%m%d_%H%M)"
-rsh "sudo sed -i 's/^bind-address.*/bind-address = 0.0.0.0/' $CNF"
-rsh "grep -q '^bind-address' $CNF || echo 'bind-address = 0.0.0.0' | sudo tee -a $CNF >/dev/null"
-rsh "grep -q '^default-time-zone' $CNF || sudo sed -i '/^\[mysqld\]/a default-time-zone = \"+09:00\"' $CNF"
+rsh "[ -f $MYCNF ]" || die "$MYCNF 가 없습니다. 02-install-mysql.sh 를 먼저 돌리세요"
+rsh "sudo cp $MYCNF ${MYCNF}.bak.\$(date +%Y%m%d_%H%M)"
+rsh "grep -q '^bind-address' $MYCNF \
+     && sudo sed -i 's/^bind-address.*/bind-address = 0.0.0.0/' $MYCNF \
+     || sudo sed -i '/^\[mysqld\]/a bind-address = 0.0.0.0' $MYCNF"
 
-say "변경 결과"
-rsh "grep -n 'bind-address\|default-time-zone' $CNF" | sed 's/^/   /'
+say "설정 파일 내용"
+rsh "cat $MYCNF" | sed 's/^/   /'
 
 say "MySQL 재시작"
 rsh "sudo systemctl restart mysql"
 sleep 3
-rsh "sudo systemctl is-active mysql" | sed 's/^/   /'
+rsh "systemctl is-active mysql" | grep -q active || die "재시작 실패. sudo journalctl -u mysql -n 50 확인"
 
-say "대기 주소 확인  ★ 0.0.0.0:3306 이어야 합니다"
+say "대기 주소 재확인  ★ 0.0.0.0:3306 이어야 합니다"
 LISTEN=$(rsh "sudo ss -tlnp | grep 3306 || true")
 echo "   $LISTEN"
 case "$LISTEN" in
   *0.0.0.0:3306*|*'*:3306'*) ok "외부 요청을 받을 수 있습니다" ;;
-  *127.0.0.1:3306*) die "127.0.0.1 그대로입니다. $CNF 를 직접 확인하세요" ;;
+  *127.0.0.1:3306*) die "127.0.0.1 그대로입니다. $MYCNF 를 확인하세요" ;;
   *) warn "3306 대기가 확인되지 않습니다" ;;
 esac
 
-say "시간대 확인"
-rsh "sudo mysql -B -e \"SELECT @@global.time_zone, NOW();\"" | sed 's/^/   /'
-
 say "② 서버 방화벽 (ufw)"
-UFW=$(rsh "sudo ufw status | head -1")
+UFW=$(rsh "sudo ufw status 2>/dev/null | head -1 || echo 'ufw 없음'")
 echo "   $UFW"
-if echo "$UFW" | grep -q inactive; then
-  ok "ufw 가 꺼져 있습니다. 별도 조치 불필요 (Lightsail 콘솔 방화벽만 설정하면 됩니다)"
+if echo "$UFW" | grep -qE "inactive|없음"; then
+  ok "ufw 가 꺼져 있습니다 — Lightsail 콘솔 방화벽만 설정하면 됩니다"
 else
   confirm "3306 을 $MYIP 에서만 허용할까요?"
   rsh "sudo ufw allow from $MYIP to any port 3306 proto tcp"
@@ -75,4 +75,4 @@ cat <<BOX
 
 BOX
 
-echo "   다음: ./08-test-remote.sh"
+echo "   다음: ./09-test-remote.sh"
