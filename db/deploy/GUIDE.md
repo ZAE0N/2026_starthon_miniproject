@@ -145,13 +145,24 @@ cd 2026_starthon_miniproject/db/deploy
 
 이미 받아 놨다면 그 브랜치로 옮깁니다.
 
+> **⚠️ `cd` 를 먼저 하세요.** git 명령은 저장소 폴더 **안에서** 쳐야 합니다.
+> 홈 폴더에서 치면 `fatal: not a git repository` 가 뜹니다.
+> 그때 `git init` 을 치면 안 됩니다 — 홈에 빈 저장소가 생겨서 상황이 더 꼬입니다.
+> (이미 그렇게 했다면 `rm -rf ~/.git` 로 지우면 됩니다. 파일은 안 지워집니다.)
+
 ```bash
-cd 2026_starthon_miniproject
+cd ~/2026_starthon_miniproject     # ← 반드시 먼저
+
+git status                         # 저장소가 맞는지 확인
 git fetch origin
 git checkout claude/project-overview-h666gf
 git pull
+
 cd db/deploy
 ```
+
+`git status` 에서 `fatal: not a git repository` 가 뜨면 그 폴더는 ZIP 으로 받은 것이라
+git 저장소가 아닙니다. 위의 `git clone -b ...` 로 새로 받으세요.
 
 ### 방법 2 · git 없이 ZIP 으로
 
