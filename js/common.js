@@ -29,7 +29,15 @@ function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-var TODAY = "2026-08-20";
+/* 오늘 날짜. 백엔드가 CURDATE() 를 쓰므로 프론트도 실제 날짜를 씁니다.
+   두 값이 어긋나면 "이번 주 마감" 결과가 화면과 서버에서 달라집니다.
+   시연 중 날짜를 고정해야 한다면 이 한 줄만 "2026-08-20" 처럼 바꾸면 됩니다. */
+var TODAY = (function () {
+  var d = new Date();
+  var m = String(d.getMonth() + 1).padStart(2, "0");
+  var t = String(d.getDate()).padStart(2, "0");
+  return d.getFullYear() + "-" + m + "-" + t;
+})();
 function today() { return TODAY; }
 function daysLeft(due) {
   if (!due) return null;

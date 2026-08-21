@@ -7,9 +7,6 @@
 - **필요한 것** AWS 계정, 인터넷, 터미널
 - **미리 알아야 할 것** 없습니다. 명령어는 전부 복사해서 붙여넣으면 됩니다
 
-> 📌 이 스크립트들은 아직 `main` 에 없고 **`claude/project-overview-h666gf` 브랜치**에만 있습니다.
-> 저장소를 받을 때 브랜치를 지정해야 합니다 — [B-2](#b-2-저장소-받기) 참고.
-
 ---
 
 ## 전체 그림
@@ -129,21 +126,12 @@ chmod 400 ~/keys/LightsailDefaultKey-ap-northeast-2.pem
 
 ## B-2. 저장소 받기
 
-> **⚠️ 이 스크립트들은 아직 `main` 에 없습니다.**
-> `claude/project-overview-h666gf` 브랜치에만 있습니다.
-> 그냥 `git clone` 만 하면 `db/deploy` 폴더가 없어서 다음 단계가 안 됩니다.
-> 아래 **브랜치를 지정해서** 받으세요.
-
-### 방법 1 · git 이 있다면 (권장)
-
 ```bash
-git clone -b claude/project-overview-h666gf \
-  https://github.com/ZAE0N/2026_starthon_miniproject.git
-
+git clone https://github.com/ZAE0N/2026_starthon_miniproject.git
 cd 2026_starthon_miniproject/db/deploy
 ```
 
-이미 받아 놨다면 그 브랜치로 옮깁니다.
+이미 받아 놨다면 최신으로 맞춥니다.
 
 > **⚠️ `cd` 를 먼저 하세요.** git 명령은 저장소 폴더 **안에서** 쳐야 합니다.
 > 홈 폴더에서 치면 `fatal: not a git repository` 가 뜹니다.
@@ -154,37 +142,9 @@ cd 2026_starthon_miniproject/db/deploy
 cd ~/2026_starthon_miniproject     # ← 반드시 먼저
 
 git status                         # 저장소가 맞는지 확인
-git fetch origin
-git checkout claude/project-overview-h666gf
-git pull
+git pull origin main
 
 cd db/deploy
-```
-
-`git status` 에서 `fatal: not a git repository` 가 뜨면 그 폴더는 ZIP 으로 받은 것이라
-git 저장소가 아닙니다. 위의 `git clone -b ...` 로 새로 받으세요.
-
-### 방법 2 · git 없이 ZIP 으로
-
-git 을 안 쓰는 팀원은 브라우저에서 바로 받아도 됩니다.
-
-1. https://github.com/ZAE0N/2026_starthon_miniproject/tree/claude/project-overview-h666gf 접속
-2. 초록색 **[Code]** → **[Download ZIP]**
-3. 압축을 풀고 터미널에서 그 안의 `db/deploy` 로 이동
-
-터미널만으로 하려면:
-
-```bash
-curl -L -o deploy.zip \
-  https://github.com/ZAE0N/2026_starthon_miniproject/archive/refs/heads/claude/project-overview-h666gf.zip
-unzip -q deploy.zip
-cd "$(ls -d 2026_starthon_miniproject-*/)db/deploy"
-```
-
-ZIP 으로 받으면 실행 권한이 빠질 수 있습니다. 한 번만 해 주세요.
-
-```bash
-chmod +x *.sh
 ```
 
 ### ✅ 제대로 받았는지 확인
@@ -196,16 +156,13 @@ ls
 **이렇게 나와야 합니다.**
 
 ```
-00-check-file.sh   03-upload.sh   06-verify.sh    09-test-remote.sh   config.env.example
-01-check-server.sh 04-backup.sh   07-appuser.sh   GUIDE.md
-02-install-mysql.sh 05-import.sh  08-network.sh   README.md          _common.sh
+00-check-file.sh   03-upload.sh    06-verify.sh   09-test-remote.sh   config.env.example
+01-check-server.sh 04-backup.sh    07-appuser.sh  GUIDE.md
+02-install-mysql.sh 05-import.sh   08-network.sh  README.md           _common.sh
 ```
 
-`No such file or directory` 가 뜨거나 목록이 비어 있으면 **브랜치를 안 옮긴 것입니다.**
-`git branch --show-current` 를 쳐서 `claude/project-overview-h666gf` 가 나오는지 확인하세요.
-
-> **이 브랜치가 `main` 에 머지된 뒤에는** `-b` 옵션 없이 그냥
-> `git clone https://github.com/ZAE0N/2026_starthon_miniproject.git` 만 하면 됩니다.
+목록이 비어 있거나 `No such file or directory` 가 뜨면 저장소를 덜 받은 것입니다.
+ZIP 으로 받았다면 실행 권한이 빠져 있을 수 있으니 `chmod +x *.sh` 를 한 번 해 주세요.
 
 ## B-3. 접속 정보 적기
 
@@ -449,17 +406,24 @@ SQL 파일을 서버의 `~/db/` 로 보내고, **체크섬을 비교해 전송�
 
 지시서 단계 6의 검증 쿼리 8개를 돌립니다.
 
-**지금은 아래처럼 나오는 게 정상입니다.** 팀원 파일이 더미 5건짜리 초안이기 때문입니다.
+**팀원 덤프를 그대로 넣은 상태라면** 아래처럼 나오는 게 정상입니다.
+그 파일은 더미 5건짜리 초안이라 기준과 다릅니다.
 
-| 항목 | 최종 목표 | 지금 | |
-|---|---|---|---|
-| 테이블 | 4개 | **3개** | `chat_cache` 없음 |
-| 건수 | 66 / 33 / 19 | **5 / 5 / 5** | 더미 데이터 |
-| CHECK 제약 | 거부됨 | **통과됨** | 제약이 없음 |
-| 챗봇 시연 데이터 | 4건 · 2건 | **0건 · 0건** | 나중에 채움 |
+| 항목 | 기준 | 팀원 덤프 |
+|---|---|---|
+| 테이블 | 4개 | 3개 (`chat_cache` 없음) |
+| 건수 | 71 / 33 / 20 | 5 / 5 / 5 |
+| CHECK 제약 | 거부됨 | 통과됨 (제약 없음) |
+| 챗봇 시연 데이터 | 4건 · 2건 | 0건 · 0건 |
 
-**여기서 딱 하나만 확인하면 됩니다 — ④ 한글이 안 깨졌는가.**
-나머지는 다음 작업(seed 교체)에서 해결합니다.
+**이 단계에서 꼭 봐야 할 것은 ④ 한글이 안 깨졌는가 하나입니다.**
+
+건수와 제약은 `reseed.sh` 로 정식 스키마·시드를 넣으면 전부 채워집니다.
+
+```bash
+python3 ../tools/gen_seed.py   # js/data.js → seed.sql
+./reseed.sh                    # 백업 → 적용 → 확인
+```
 
 ---
 
@@ -521,10 +485,10 @@ FastAPI 가 쓸 계정을 만듭니다. **root 를 쓰지 않습니다.**
 3306 을 전체 공개하면 **몇 시간 안에 자동 로그인 시도가 들어옵니다.**
 실제로 며칠 안에 뚫립니다.
 
-팀원도 각자 붙어야 한다면, 각자 https://ifconfig.me 에서 IP 를 확인해 규칙에 추가하면 됩니다.
-
-> 카페나 학교 와이파이는 IP 가 자주 바뀝니다.
-> 접속이 갑자기 안 되면 IP 가 바뀐 것이니 규칙을 새 IP 로 고치세요.
+> **카페나 학교 와이파이는 IP 가 자주 바뀝니다.**
+> 어제까지 되던 접속이 갑자기 timeout 이면 십중팔구 내 IP 가 바뀐 것입니다.
+> `curl -s ifconfig.me` 로 지금 IP 를 확인하고 콘솔 규칙을 고치세요.
+> 다른 사람이 붙어야 한다면 그 사람의 IP 를 규칙에 추가하면 됩니다.
 
 ---
 
@@ -533,6 +497,16 @@ FastAPI 가 쓸 계정을 만듭니다. **root 를 쓰지 않습니다.**
 ```bash
 ./09-test-remote.sh
 ```
+
+> **"접속 도구가 없습니다" 가 뜨면** 내 컴퓨터에 MySQL 접속 프로그램이 없는 것입니다.
+> 서버 문제가 아닙니다. 아래 한 줄로 깔고 다시 실행하세요.
+>
+> ```bash
+> sudo apt update && sudo apt install -y mysql-client
+> ```
+>
+> 설치 중 비밀번호를 물으면 **WSL 우분투 계정 비밀번호**입니다 (MySQL 비번 아님).
+> `mysql-client` 는 접속 프로그램만 깔립니다. 내 PC 에 MySQL 서버가 생기지 않습니다.
 
 8단계에서 받은 비밀번호를 붙여넣습니다. (입력해도 화면에 안 보이는 게 정상입니다)
 

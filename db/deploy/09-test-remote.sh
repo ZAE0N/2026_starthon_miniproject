@@ -2,6 +2,33 @@
 # 단계 9 — 로컬에서 원격 접속 테스트. 반드시 내 컴퓨터에서 실행하세요.
 . "$(dirname "$0")/_common.sh"
 
+# 접속을 테스트하려면 내 컴퓨터에 클라이언트가 하나는 있어야 합니다.
+# (서버가 아니라 "접속 프로그램"입니다. 내 PC 에 MySQL 서버가 깔리는 게 아닙니다)
+if ! command -v mysql >/dev/null && ! python3 -c "import pymysql" 2>/dev/null; then
+  say "접속 도구가 없습니다"
+  cat <<'BOX'
+   내 컴퓨터에 MySQL 에 접속할 도구가 하나도 없습니다.
+   서버 문제가 아니라 이 컴퓨터에 프로그램이 없는 것이라, 하나만 깔면 됩니다.
+
+   ▶ 이걸 권합니다 (간단하고, 나중에 DB 들여다볼 때도 계속 씁니다)
+
+        sudo apt update && sudo apt install -y mysql-client
+
+   ▶ 파이썬으로 하고 싶다면
+
+        sudo apt install -y python3-pymysql python3-cryptography
+
+     ※ pip install pymysql 은 요즘 우분투에서 막혀 있습니다(시스템 파이썬 보호).
+       apt 로 받으세요.
+
+   ※ mysql-client 는 "접속 프로그램"만 깔립니다.
+     내 컴퓨터에 MySQL 서버가 생기는 게 아닙니다.
+
+   설치가 끝나면 이 스크립트를 다시 실행하세요:  ./09-test-remote.sh
+BOX
+  exit 1
+fi
+
 say "원격 접속 테스트"
 echo "   대상: $APP_USER@$SERVER_IP:3306/$DB_NAME"
 printf '   %s 비밀번호: ' "$APP_USER"
@@ -26,7 +53,7 @@ import sys
 try:
     import pymysql
 except ImportError:
-    print('   pymysql 이 없습니다:  pip install pymysql cryptography'); sys.exit(0)
+    print('   pymysql 이 없습니다:  sudo apt install -y python3-pymysql python3-cryptography'); sys.exit(0)
 try:
     c = pymysql.connect(host='$SERVER_IP', user='$APP_USER', password='''$PW''',
                         database='$DB_NAME', charset='utf8mb4', connect_timeout=10)
@@ -47,6 +74,6 @@ cat <<'BOX'
    그냥 멈춤(timeout)          → Lightsail 콘솔 방화벽 (07 의 ③)
    Can't connect to MySQL      → bind-address (07 의 ①)
    Access denied for user      → 계정이 @'localhost' 로만 있음 (06 재실행)
-   Authentication plugin ...   → pip install cryptography
+   Authentication plugin ...   → sudo apt install -y python3-cryptography
    한글이 ???                  → 문자셋. 임포트를 다시 해야 합니다
 BOX
