@@ -1,0 +1,20 @@
+# 비밀 정보 — 절대 커밋 금지
+.env
+*.pem
+db/deploy/config.env
+
+# DB 백업
+*.sql.bak
+db/backup_*.sql
+
+# 파이썬
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / 편집기
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
