@@ -195,7 +195,7 @@ window.applyChatFilter = function (a) {
 };
 
 /* ── 시작 ── */
-document.addEventListener("DOMContentLoaded", function () {
+onDataReady(function () {
   mountLayout("정보광장");
   readURL();
 

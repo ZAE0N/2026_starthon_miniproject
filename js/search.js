@@ -62,7 +62,7 @@ function render() {
   box.innerHTML = html;
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+onDataReady(function () {
   mountLayout(null);
   render();
 });

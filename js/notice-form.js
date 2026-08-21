@@ -55,22 +55,33 @@ function submitForm(e) {
   if (!validate(v)) return;
 
   if (editId) {
-    var n = window.NOTICES.find(function (x) { return x.id === editId; });
-    Object.assign(n, v);
-    saveNotices();
-    sessionStorage.setItem("flash", "수정되었습니다");
-    location.href = "notice.html?id=" + editId;
+    Api.updateNotice(editId, v)
+      .then(function (saved) {
+        var n = window.NOTICES.find(function (x) { return x.id === editId; });
+        Object.assign(n, saved || v);
+        saveNotices();
+        sessionStorage.setItem("flash", "수정되었습니다");
+        location.href = "notice.html?id=" + editId;
+      })
+      .catch(function () { toast("수정하지 못했습니다. 잠시 후 다시 시도해 주세요", true); });
   } else {
-    var maxId = window.NOTICES.reduce(function (m, x) { return Math.max(m, x.id); }, 0);
-    var created = Object.assign({ id: maxId + 1, createdAt: today(), views: 0 }, v);
-    window.NOTICES.unshift(created);
-    saveNotices();
-    sessionStorage.setItem("flash", "등록되었습니다");
-    location.href = "notice.html?id=" + created.id;
+    Api.createNotice(v)
+      .then(function (saved) {
+        /* 서버가 없으면 메모리에서 번호를 매깁니다 (목업 동작) */
+        if (!saved) {
+          var maxId = window.NOTICES.reduce(function (m, x) { return Math.max(m, x.id); }, 0);
+          saved = Object.assign({ id: maxId + 1, createdAt: today(), views: 0 }, v);
+        }
+        window.NOTICES.unshift(saved);
+        saveNotices();
+        sessionStorage.setItem("flash", "등록되었습니다");
+        location.href = "notice.html?id=" + saved.id;
+      })
+      .catch(function () { toast("등록하지 못했습니다. 잠시 후 다시 시도해 주세요", true); });
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+onDataReady(function () {
   mountLayout("정보광장");
 
   if (!isAdmin()) {
