@@ -7,6 +7,9 @@
 - **필요한 것** AWS 계정, 인터넷, 터미널
 - **미리 알아야 할 것** 없습니다. 명령어는 전부 복사해서 붙여넣으면 됩니다
 
+> 📌 이 스크립트들은 아직 `main` 에 없고 **`claude/project-overview-h666gf` 브랜치**에만 있습니다.
+> 저장소를 받을 때 브랜치를 지정해야 합니다 — [B-2](#b-2-저장소-받기) 참고.
+
 ---
 
 ## 전체 그림
@@ -126,18 +129,72 @@ chmod 400 ~/keys/LightsailDefaultKey-ap-northeast-2.pem
 
 ## B-2. 저장소 받기
 
+> **⚠️ 이 스크립트들은 아직 `main` 에 없습니다.**
+> `claude/project-overview-h666gf` 브랜치에만 있습니다.
+> 그냥 `git clone` 만 하면 `db/deploy` 폴더가 없어서 다음 단계가 안 됩니다.
+> 아래 **브랜치를 지정해서** 받으세요.
+
+### 방법 1 · git 이 있다면 (권장)
+
 ```bash
-git clone https://github.com/ZAE0N/2026_starthon_miniproject.git
+git clone -b claude/project-overview-h666gf \
+  https://github.com/ZAE0N/2026_starthon_miniproject.git
+
 cd 2026_starthon_miniproject/db/deploy
 ```
 
-이미 받아 놨다면 최신으로 맞춥니다.
+이미 받아 놨다면 그 브랜치로 옮깁니다.
 
 ```bash
 cd 2026_starthon_miniproject
-git pull origin main
+git fetch origin
+git checkout claude/project-overview-h666gf
+git pull
 cd db/deploy
 ```
+
+### 방법 2 · git 없이 ZIP 으로
+
+git 을 안 쓰는 팀원은 브라우저에서 바로 받아도 됩니다.
+
+1. https://github.com/ZAE0N/2026_starthon_miniproject/tree/claude/project-overview-h666gf 접속
+2. 초록색 **[Code]** → **[Download ZIP]**
+3. 압축을 풀고 터미널에서 그 안의 `db/deploy` 로 이동
+
+터미널만으로 하려면:
+
+```bash
+curl -L -o deploy.zip \
+  https://github.com/ZAE0N/2026_starthon_miniproject/archive/refs/heads/claude/project-overview-h666gf.zip
+unzip -q deploy.zip
+cd "$(ls -d 2026_starthon_miniproject-*/)db/deploy"
+```
+
+ZIP 으로 받으면 실행 권한이 빠질 수 있습니다. 한 번만 해 주세요.
+
+```bash
+chmod +x *.sh
+```
+
+### ✅ 제대로 받았는지 확인
+
+```bash
+ls
+```
+
+**이렇게 나와야 합니다.**
+
+```
+00-check-file.sh   03-upload.sh   06-verify.sh    09-test-remote.sh   config.env.example
+01-check-server.sh 04-backup.sh   07-appuser.sh   GUIDE.md
+02-install-mysql.sh 05-import.sh  08-network.sh   README.md          _common.sh
+```
+
+`No such file or directory` 가 뜨거나 목록이 비어 있으면 **브랜치를 안 옮긴 것입니다.**
+`git branch --show-current` 를 쳐서 `claude/project-overview-h666gf` 가 나오는지 확인하세요.
+
+> **이 브랜치가 `main` 에 머지된 뒤에는** `-b` 옵션 없이 그냥
+> `git clone https://github.com/ZAE0N/2026_starthon_miniproject.git` 만 하면 됩니다.
 
 ## B-3. 접속 정보 적기
 
