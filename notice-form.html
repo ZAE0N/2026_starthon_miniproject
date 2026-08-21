@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>공지 등록 | 한빛공업전문대학</title>
+<title>공지 등록 | 인하공업전문대학</title>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
@@ -28,13 +28,20 @@
         <div class="form-row">
           <label for="category">카테고리<span class="req">*</span></label>
           <div class="field">
-            <select id="category">
-              <option value="학사">학사</option>
-              <option value="행사">행사</option>
-              <option value="장학">장학</option>
-              <option value="채용">채용</option>
-              <option value="일반">일반</option>
-            </select>
+            <div class="inline">
+              <select id="category">
+                <option value="학사">학사</option>
+                <option value="행사">행사</option>
+                <option value="장학">장학</option>
+                <option value="채용">채용</option>
+                <option value="일반">일반</option>
+              </select>
+              <select id="subCategory">
+                <option value="">세부 없음</option>
+                <option value="근로">근로</option>
+              </select>
+            </div>
+            <p class="hint" id="subHint">장학 카테고리에서만 고를 수 있습니다.</p>
           </div>
         </div>
 

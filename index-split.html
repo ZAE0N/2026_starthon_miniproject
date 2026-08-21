@@ -24,20 +24,38 @@
 
   <section class="section">
     <div class="container">
-        <div class="sec-head">
-          <h2>공지사항</h2>
-          <span class="sec-count" id="homeCount">0건</span>
-          <div class="sec-actions" id="homeTabs"></div>
-          <a class="pill on" id="moreBtn" href="notices.html">전체보기 →</a>
+      <div class="variant-note">
+        <b>비교용 화면</b> — 홈을 반으로 나눠 공지와 학사일정을 함께 보여주는 배치입니다.
+        기본 화면(index.html)은 카드를 눌러 모달로 여는 방식입니다.
+      </div>
+
+      <div class="split">
+        <div>
+          <div class="sec-head">
+            <h2>공지사항</h2>
+            <span class="sec-count" id="homeCount">0건</span>
+            <div class="sec-actions" id="homeTabs"></div>
+            <a class="pill on" id="moreBtn" href="notices.html">전체보기 →</a>
+          </div>
+
+          <div class="home-chip" id="homeChip">
+            <span class="label">AI 도우미가 적용한 조건</span>
+            <span class="tag" id="homeChipTags"></span>
+            <button class="clear" onclick="homeClear()">해제 ✕</button>
+          </div>
+
+          <ul class="home-list" id="homeList"></ul>
+
         </div>
 
-        <div class="home-chip" id="homeChip">
-          <span class="label">AI 도우미가 적용한 조건</span>
-          <span class="tag" id="homeChipTags"></span>
-          <button class="clear" onclick="homeClear()">해제 ✕</button>
+        <div>
+          <div class="sec-head">
+            <h2>학사일정</h2>
+            <a class="pill" href="calendar.html">전체 화면 →</a>
+          </div>
+          <div id="calMountHome"></div>
         </div>
-
-        <ul class="home-list" id="homeList"></ul>
+      </div>
 
       <div class="tiles">
         <a class="tile t-cyan" href="#" onclick="openCalendar();return false;">
@@ -65,7 +83,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   initHome();
   document.getElementById("dormTile").href = window.EXTERNAL.dorm;
-
+  mountCalendar(document.getElementById("calMountHome"));
 });
 </script>
 </body>

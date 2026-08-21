@@ -38,7 +38,7 @@ function render() {
     html += '<section class="grp"><h3>공지사항 <span>' + notices.length + "건</span></h3><ul>";
     html += notices.slice(0, 5).map(function (n) {
       return '<li><a href="notice.html?id=' + n.id + '">' +
-        '<span class="badge badge-' + n.category + '">' + n.category + "</span>" +
+        catBadges(n) +
         '<span class="t">' + esc(n.title) + "</span>" +
         '<span class="d">' + n.createdAt + "</span></a></li>";
     }).join("");
