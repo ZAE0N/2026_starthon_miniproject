@@ -79,12 +79,13 @@ python -m http.server 5500
 MySQL 서버 구축과 DB 반영은 `db/deploy/` 에 있습니다.
 
 **처음 하는 거라면 → [`db/deploy/GUIDE.md`](db/deploy/GUIDE.md)**
-Lightsail 인스턴스 생성부터 원격 접속 테스트까지 순서대로 따라가면 됩니다. 40분~1시간.
+Lightsail 인스턴스 생성부터 배포 링크까지 순서대로 따라가면 됩니다. 50분~1시간.
 
 ```bash
 cd db/deploy
 cp config.env.example config.env   # 서버 IP 와 키 경로만 채우면 됨
-./00-check-file.sh                 # 이후 번호 순서대로
+./00-check-file.sh                 # 00~09 로 DB 구축
+./10-deploy-app.sh                 # 프론트+API 배포 (nginx 단일 오리진)
 ```
 
 | | |
@@ -93,5 +94,10 @@ cp config.env.example config.env   # 서버 IP 와 키 경로만 채우면 됨
 | [`db/deploy/README.md`](db/deploy/README.md) | 스크립트별 상세 설명 |
 | `db/dump_from_team.sql` | 팀원이 만든 덤프 (스키마 초안 + 더미 5건) |
 
-현재 덤프는 초안이라 건수가 5/5/5 이고 챗봇 시연용 데이터가 없습니다.
-`js/data.js` 의 66/33/19 건을 `seed.sql` 로 옮기는 작업이 남아 있습니다.
+`js/data.js` 가 데이터의 단일 출처입니다. 거기서 `db/seed.sql` 을 생성하므로
+화면과 DB 가 항상 같은 내용을 갖습니다 (공지 71 · 일정 33 · 문서 20).
+
+```bash
+python3 db/tools/gen_seed.py    # data.js → seed.sql
+cd db/deploy && ./reseed.sh     # DB 에 반영
+```
