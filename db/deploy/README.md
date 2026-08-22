@@ -42,6 +42,7 @@ cp config.env.example config.env
 | `07-appuser.sh` | 앱 전용 계정 생성 + 비밀번호 발급 | **계정 생성** |
 | `08-network.sh` | bind-address, ufw | **설정 변경** |
 | `09-test-remote.sh` | 로컬에서 원격 접속 테스트 | 없음 |
+| `10-deploy-app.sh` | 프론트+API 배포 (nginx 단일 오리진) | **nginx·서비스 등록** |
 | `reseed.sh` | (반복) 스키마·시드 다시 넣기 | **테이블 재생성** |
 
 `00` `01` `04` `06` `09` 는 읽기만 하므로 몇 번을 돌려도 안전합니다.
@@ -94,6 +95,55 @@ Ubuntu 의 MySQL 8 은 root 를 `auth_socket` 으로 만듭니다.
 - 기존 DB 를 백업 없이 `DROP` 하지 않습니다 — `05` 가 백업 파일 존재를 확인합니다
 - 배포판 설정 파일을 직접 고치지 않습니다 — 별도 파일(`zz-inhatc.cnf`)로 덮어씁니다
 - 서버를 바꾸는 단계마다 확인을 받습니다
+
+## 앱 배포 — 10-deploy-app.sh
+
+프론트와 API 를 서버 한 곳에서 서빙합니다.
+
+```
+nginx :80
+  ├─ /      →  /var/www/inhatc   (정적 파일)
+  └─ /api/  →  127.0.0.1:8000    (uvicorn)
+```
+
+**같은 주소에서 나오는 것이 중요합니다.** GitHub Pages(`https`)에서 `http` 백엔드를
+부르면 브라우저가 차단합니다(mixed content). 한 곳에서 서빙하면 그 문제도,
+CORS 설정도 생기지 않고 링크도 하나로 끝납니다.
+
+```bash
+./10-deploy-app.sh
+```
+
+하는 일은 순서대로 이렇습니다.
+
+1. `nginx` · `git` · `python3-venv` 설치 확인
+2. 서버에서 저장소를 `git clone` (있으면 `git pull`)
+3. `api/.env` 생성 — **DB 비밀번호와 OpenAI 키를 여기서 물어봅니다.**
+   입력값은 이 컴퓨터에 저장되지 않고 서버로 바로 들어갑니다 (권한 600)
+4. `venv` + 의존성 설치
+5. **정적 파일만** `/var/www/inhatc` 로 복사
+6. `uvicorn` 을 systemd 서비스로 등록 (재부팅 후 자동 기동)
+7. nginx 설정과 재적용
+8. 서버 내부에서 `/`, `/api/health`, `/api/notices`, 한글 확인
+
+**코드를 고친 뒤 다시 실행하면 그대로 업데이트 배포가 됩니다.**
+
+### 저장소 폴더를 통째로 서빙하지 않는 이유
+
+`root` 를 클론 폴더로 잡으면 `db/seed.sql`, `api/.env`, `.git/` 까지 인터넷에
+열립니다. `.env` 에는 DB 비밀번호와 OpenAI 키가 들어 있습니다.
+그래서 화면에 필요한 것(`*.html` · `css/` · `js/`)만 골라서 복사합니다.
+
+### 마지막 한 단계는 콘솔에서
+
+Lightsail 콘솔 → 인스턴스 → [네트워킹] → 규칙 추가 → **HTTP / 80**.
+**여기는 IP 제한을 걸지 않습니다.** 심사위원이 접속해야 하므로 3306 과 반대입니다.
+
+### 로그 보기
+
+```bash
+ssh -i <키> ubuntu@<서버IP> "sudo journalctl -u inhatc-api -f"
+```
 
 ## 데이터를 바꿀 때 — reseed.sh
 
