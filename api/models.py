@@ -54,3 +54,18 @@ class Page(Base):
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     sort_order: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+
+
+class ChatCache(Base):
+    """같은 질문이 반복될 때 OpenAI 호출을 아낍니다. 없어도 동작에는 지장 없습니다."""
+
+    __tablename__ = "chat_cache"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    question_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    question: Mapped[str] = mapped_column(String(500), nullable=False)
+    response: Mapped[str] = mapped_column(Text, nullable=False)
+    hit_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=func.now(), server_default=func.now()
+    )

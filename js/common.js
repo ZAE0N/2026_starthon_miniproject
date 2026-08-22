@@ -272,9 +272,11 @@ function ask(text) {
   addUser(text);
   var t = addTyping();
 
-  setTimeout(function () {
+  /* 서버가 답합니다. 서버가 없거나 실패하면 목업 chatAnswer() 로 넘어갑니다.
+     응답 모양이 같아서 아래 화면 조작 코드는 그대로입니다. */
+  Api.chat(text).then(function (res) {
     t.remove();
-    var res = window.chatAnswer(text);
+    if (!res) res = window.chatAnswer(text);
     var el = addAI(res.answer, res.sources);
     var a = res.action;
 
@@ -307,7 +309,7 @@ function ask(text) {
     go.href = "notices.html?" + filterToQuery(a);
     go.textContent = "공지 목록에서 결과 보기 →";
     el.appendChild(go);
-  }, 700);
+  });
 }
 
 /* ── 페이지 조립 ── */

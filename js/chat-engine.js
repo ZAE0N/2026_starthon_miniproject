@@ -72,17 +72,20 @@
 
     var a = {
       type: "filter",
-      category: detectCategory(q),
+      category: null,
       subCategory: null,
       keyword: null,
       dueBefore: detectDue(q),
       noticeId: null,
     };
 
-    /* 근로장학은 하위 분류로 좁힙니다 */
-    if (/근로/.test(q)) { a.category = "장학"; a.subCategory = "근로"; }
+    /* 구체적인 낱말을 먼저 씁니다. '기숙사' 는 일반 카테고리의 동의어이기도 해서
+       카테고리를 먼저 잡으면 일반 공지 전체가 걸려 결과가 뭉툭해집니다. */
+    a.keyword = detectKeyword(q);
+    if (!a.keyword) a.category = detectCategory(q);
 
-    if (!a.category) a.keyword = detectKeyword(q);
+    /* 근로장학은 하위 분류로 좁힙니다 */
+    if (/근로/.test(q)) { a.category = "장학"; a.subCategory = "근로"; a.keyword = null; }
     if (!a.category && !a.keyword && !a.dueBefore) {
       a.keyword = q.replace(/[?!.]/g, "").trim().slice(0, 12);
     }
