@@ -82,3 +82,39 @@ class NoticeUpdate(CamelModel):
     department: str | None = None
     due_date: date | None = None
     is_pinned: bool | None = None
+
+
+# ── 챗봇 ────────────────────────────────────────────────────────────────
+class ChatAction(BaseModel):
+    """화면 조작 명령. OpenAI 함수 인자가 그대로 여기에 담깁니다.
+
+    프론트는 type 을 보고 목록을 거르거나(filter) 상세로 이동합니다(navigate).
+    필드 이름이 camelCase 라 별도 변환이 필요 없습니다.
+    """
+
+    type: str                       # filter · navigate · none
+    category: str | None = None
+    subCategory: str | None = None  # noqa: N815
+    keyword: str | None = None
+    dueBefore: str | None = None    # noqa: N815
+    noticeId: int | None = None     # noqa: N815
+
+
+class ChatSource(BaseModel):
+    """답변 아래 붙는 근거 공지 카드."""
+
+    id: int
+    title: str
+    department: str | None = None
+    dueDate: str | None = None      # noqa: N815
+
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list[dict] = []
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    action: ChatAction
+    sources: list[ChatSource] = []

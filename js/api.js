@@ -83,5 +83,16 @@
       if (!window.API_LIVE) return Promise.resolve(null);
       return send("DELETE", "/api/notices/" + id, null);
     },
+
+    /* 챗봇. 서버가 { answer, action, sources } 를 그대로 내려줍니다.
+       실패하면 null 을 돌려주고, 호출부가 목업 chatAnswer() 로 넘어갑니다. */
+    chat: function (message) {
+      if (!window.API_LIVE) return Promise.resolve(null);
+      return send("POST", "/api/chat", { message: message, history: [] })
+        .catch(function (err) {
+          console.warn("[api] /api/chat 실패, 목업으로 답합니다:", err.message);
+          return null;
+        });
+    },
   };
 })();

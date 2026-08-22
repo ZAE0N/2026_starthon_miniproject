@@ -15,7 +15,7 @@ from sqlalchemy import text
 
 from config import CORS_ORIGINS
 from db import engine
-from routers import events, notices, pages
+from routers import chat, events, notices, pages
 
 app = FastAPI(
     title="인하공업전문대학 홈페이지 API",
@@ -36,6 +36,7 @@ if CORS_ORIGINS:
 app.include_router(notices.router)
 app.include_router(events.router)
 app.include_router(pages.router)
+app.include_router(chat.router)
 
 
 @app.get("/api/health", tags=["health"])
