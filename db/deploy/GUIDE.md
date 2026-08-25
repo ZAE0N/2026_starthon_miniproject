@@ -599,7 +599,18 @@ ssh -i ~/keys/키파일.pem ubuntu@서버IP "systemctl status inhatc-api nginx"
 | 브라우저가 계속 로딩 | Lightsail 콘솔에서 80 포트를 안 열었음 |
 | 화면은 뜨는데 목록이 목업 | API 가 죽어서 폴백 중 — 위 로그 확인 |
 | `502 Bad Gateway` | uvicorn 이 안 떠 있음 — 위 로그 확인 |
+| `address already in use` | 포트 충돌 — 아래 참고 |
 | 한글이 `???` | DB 문자셋 — `./06-verify.sh` 의 ④ 확인 |
+
+**포트가 겹칠 때**는 그 프로그램을 끄지 말고 우리 포트를 옮기면 됩니다.
+스크립트가 점유 중인 프로그램을 보여주고 멈추므로, 안내대로 하시면 됩니다.
+
+```bash
+echo 'API_PORT=8020' >> config.env
+./10-deploy-app.sh
+```
+
+접속 주소는 그대로입니다.
 </details>
 
 ---

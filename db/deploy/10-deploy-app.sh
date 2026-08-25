@@ -3,7 +3,7 @@
 #
 #   nginx :80
 #     ├─ /      →  /var/www/inhatc      (정적 파일)
-#     └─ /api/  →  127.0.0.1:8000       (uvicorn)
+#     └─ /api/  →  127.0.0.1:$API_PORT   (uvicorn, 기본 8010)
 #
 # 같은 주소에서 나오므로 CORS 설정도, https/http 혼용 차단(mixed content)도
 # 생기지 않습니다. 심사에 낼 링크는 http://<서버IP>/ 하나입니다.
@@ -15,12 +15,40 @@ REPO_URL="https://github.com/ZAE0N/2026_starthon_miniproject.git"
 APP_DIR="/home/$SSH_USER/app"
 WEB_DIR="/var/www/inhatc"
 BRANCH="${DEPLOY_BRANCH:-main}"
+# uvicorn 이 들을 포트. 서버에서 이미 쓰는 포트와 겹치면 config.env 에서 바꾸세요.
+API_PORT="${API_PORT:-8010}"
 
 say "배포 대상"
 echo "   저장소 : $REPO_URL ($BRANCH)"
 echo "   서버   : $SSH_USER@$SERVER_IP"
 echo "   앱     : $APP_DIR"
 echo "   정적   : $WEB_DIR"
+echo "   API    : 127.0.0.1:$API_PORT"
+
+# ── 0. 포트가 비어 있는지 ───────────────────────────────────────────────
+# 우리 서비스를 먼저 멈춘 뒤에 확인합니다. 그래야 남는 점유자가 있으면
+# 그건 확실히 다른 프로그램입니다.
+# (프로세스 이름으로 구분하면 venv 의 uvicorn 이 python3 로 보여 오판합니다.)
+say "포트 확인 ($API_PORT)"
+rsh "sudo systemctl stop inhatc-api 2>/dev/null || true"
+sleep 1
+HOLDER=$(rsh "sudo ss -tlnp 2>/dev/null | grep -E ':$API_PORT( |\\$)' || true")
+if [ -n "$HOLDER" ]; then
+  warn "$API_PORT 을 다른 프로그램이 쓰고 있습니다:"
+  echo "$HOLDER" | sed 's/^/      /'
+  cat <<PORTHELP
+
+   그 프로그램은 끄지 마세요. 우리 API 의 포트를 옮기면 됩니다.
+   config.env 에 한 줄 추가하고 다시 실행하세요:
+
+        echo 'API_PORT=8020' >> $HERE/config.env
+        ./10-deploy-app.sh
+
+   nginx 가 /api 를 그 포트로 넘겨주므로 접속 주소는 그대로입니다.
+PORTHELP
+  die "포트가 겹쳐 중단합니다"
+fi
+ok "$API_PORT 사용 가능"
 
 # ── 1. 필요한 패키지 ────────────────────────────────────────────────────
 say "패키지 확인"
@@ -108,14 +136,14 @@ After=network.target mysql.service
 Type=simple
 User=$SSH_USER
 WorkingDirectory=$APP_DIR/api
-ExecStart=$APP_DIR/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStart=$APP_DIR/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port $API_PORT
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
 UNITEOF
-rsh "sudo systemctl daemon-reload && sudo systemctl enable -q --now inhatc-api && sudo systemctl restart inhatc-api"
+rsh "sudo systemctl daemon-reload && sudo systemctl reset-failed inhatc-api 2>/dev/null; sudo systemctl enable -q --now inhatc-api && sudo systemctl restart inhatc-api"
 sleep 3
 STATE=$(rsh "systemctl is-active inhatc-api")
 echo "   상태: $STATE"
@@ -123,7 +151,7 @@ if [ "$STATE" != "active" ]; then
   rsh "sudo journalctl -u inhatc-api -n 30 --no-pager" | sed 's/^/   /'
   die "API 가 뜨지 않았습니다. 위 로그를 확인하세요"
 fi
-ok "uvicorn 실행 중 (127.0.0.1:8000)"
+ok "uvicorn 실행 중 (127.0.0.1:$API_PORT)"
 
 # ── 7. nginx ────────────────────────────────────────────────────────────
 say "nginx 설정"
@@ -141,7 +169,7 @@ server {
 
     # API 는 uvicorn 으로 넘깁니다. 같은 주소라 CORS 가 필요 없습니다.
     location /api/ {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:$API_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
