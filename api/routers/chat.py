@@ -28,38 +28,62 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 SYSTEM_PROMPT = """너는 인하공업전문대학 홈페이지의 공지사항 안내 도우미다.
 
-학생이 찾는 공지를 search_notices 로 좁힌 뒤, 결과를 한두 문장으로 간결하게 답한다.
+가장 중요한 규칙: **학교와 조금이라도 관련된 질문이면 먼저 search_notices 를 호출한다.**
+찾아보지도 않고 "안내할 수 없다"고 답하지 마라. 검색은 공짜다.
 
-규칙
-- 공지사항과 학사 안내에 대해서만 답한다. 그 밖의 질문에는 안내할 수 없다고 말한다.
-- 답변에 없는 사실을 지어내지 않는다. 검색 결과에 있는 내용만 말한다.
+학생은 카테고리 이름을 그대로 말하지 않는다. 일상 표현을 이렇게 옮겨라.
+
+- 취업·채용·인턴·공채·면접·현장실습          → category="채용"
+- 장학금·등록금 지원·국가장학               → category="장학"
+- 수강신청·성적·학점·휴학·복학·졸업·등록금   → category="학사"
+- 축제·체육대회·동아리·경진대회·오리엔테이션   → category="행사"
+- 기숙사·생활관·도서관·주차·셔틀·학생증      → keyword 에 그 낱말을 넣는다
+
+카테고리가 애매하면 **category 없이 keyword 만 넣어서** 호출해라.
+그래도 결과가 없으면 그때 없다고 답하면 된다.
+
+정말로 학교와 무관할 때만(날씨, 점심 메뉴, 연예인, 주식 같은) 도구를 부르지 않고
+공지사항만 안내할 수 있다고 말한다.
+
+답변 규칙
+- 검색 결과에 있는 내용만 말한다. 없는 사실을 지어내지 않는다.
 - 건수를 먼저 말하고, 마감이 가까운 것이 있으면 그것을 짚어 준다.
-- 존댓말로, 두 문장을 넘기지 않는다.
-
-카테고리는 학사·행사·장학·채용·일반 다섯 가지다.
-하위 분류는 장학 공지에만 있고 값은 '근로' 하나뿐이다."""
+- 존댓말로, 두 문장을 넘기지 않는다."""
 
 TOOLS = [{
     "type": "function",
     "function": {
         "name": "search_notices",
-        "description": "조건에 맞는 학교 공지사항을 찾는다. 학생이 공지를 찾으면 반드시 호출한다.",
+        "description": (
+            "학교 공지사항을 찾는다. 학생이 학교·학사·캠퍼스 생활에 대해 물으면 "
+            "무엇이든 먼저 이 도구를 호출한다. 조건을 모르겠으면 인자 없이 호출해도 된다."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
                 "category": {
                     "type": "string",
                     "enum": ["학사", "행사", "장학", "채용", "일반"],
-                    "description": "공지 분류. 확실하지 않으면 넣지 않는다.",
+                    "description": (
+                        "공지 분류. 취업·인턴은 '채용', 장학금은 '장학', "
+                        "수강신청·성적은 '학사', 축제·동아리는 '행사'. "
+                        "확실하지 않으면 넣지 말고 keyword 를 쓴다."
+                    ),
                 },
                 "sub_category": {
                     "type": "string",
                     "enum": ["근로"],
-                    "description": "장학 공지의 하위 분류. 근로장학을 물을 때만 쓴다.",
+                    "description": (
+                        "장학 공지의 하위 분류. 사용자가 '근로장학' 또는 '근로'라고 "
+                        "직접 말했을 때만 쓴다. 그냥 '장학금'이라고 하면 넣지 않는다."
+                    ),
                 },
                 "keyword": {
                     "type": "string",
-                    "description": "제목·본문에서 찾을 낱말. 예: 기숙사, 등록금, 졸업",
+                    "description": (
+                        "제목·본문에서 찾을 낱말. 카테고리로 분류하기 애매한 주제는 "
+                        "여기에 넣는다. 예: 기숙사, 생활관, 도서관, 주차, 셔틀, 졸업"
+                    ),
                 },
                 "due_within_days": {
                     "type": "integer",
@@ -82,7 +106,7 @@ def _to_source(n: Notice) -> dict:
             "dueDate": n.due_date.isoformat() if n.due_date else None}
 
 
-def _clean_args(args: dict) -> dict:
+def _clean_args(args: dict, message: str = "") -> dict:
     """모델이 돌려준 함수 인자를 우리가 믿을 수 있는 값으로 좁힙니다.
 
     모델은 정의에 없는 값도 보낼 수 있습니다. 그대로 쓰면 결과가 비거나
@@ -96,7 +120,10 @@ def _clean_args(args: dict) -> dict:
 
     sub = args.get("sub_category")
     # 하위 분류는 장학 공지에만 있습니다. 그 밖에서는 버립니다.
-    if isinstance(sub, str) and sub in SUB_CATEGORIES and out.get("category") == "장학":
+    # 또한 사용자가 '근로'라고 직접 말했을 때만 인정합니다.
+    # 모델이 그냥 "장학금" 질문에도 근로를 덧붙여 결과를 지나치게 좁히는 일이 있습니다.
+    if (isinstance(sub, str) and sub in SUB_CATEGORIES
+            and out.get("category") == "장학" and sub in message):
         out["sub_category"] = sub
 
     keyword = args.get("keyword")
@@ -170,8 +197,15 @@ def _ask_openai(db: Session, message: str) -> dict | None:
     )
     choice = first.choices[0].message
 
-    # 공지와 무관한 질문이면 도구를 부르지 않습니다
+    # 모델이 도구를 부르지 않았습니다.
+    # 정말 범위 밖일 수도 있지만, 모델이 "취업 관련 공지는 안내할 수 없습니다" 처럼
+    # 찾아보지도 않고 거절하는 경우가 있습니다. 규칙 엔진이 찾아내면 그쪽을 씁니다.
     if not choice.tool_calls:
+        fallback = chat_rules.answer(db, message)
+        if fallback["sources"]:
+            log.info("모델이 도구를 부르지 않아 규칙 결과를 씁니다: %s", message[:40])
+            fallback["answer"] = _clean_answer(fallback["answer"], "다시 물어봐 주세요.")
+            return fallback
         return {
             "answer": _clean_answer(
                 choice.content,
@@ -188,7 +222,7 @@ def _ask_openai(db: Session, message: str) -> dict | None:
             raw = {}
     except (ValueError, TypeError):
         raw = {}
-    args = _clean_args(raw)
+    args = _clean_args(raw, message)
 
     days = args.get("due_within_days")
     due_before = today + timedelta(days=days) if days else None
