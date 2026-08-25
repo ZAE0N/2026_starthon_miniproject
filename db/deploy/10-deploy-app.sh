@@ -205,7 +205,8 @@ fi
 say "서버 내부 점검"
 rsh "curl -s -o /dev/null -w '   /              %{http_code}\n' http://127.0.0.1/"
 rsh "curl -s -o /dev/null -w '   /notices.html  %{http_code}\n' http://127.0.0.1/notices.html"
-rsh "curl -s -w '\n' http://127.0.0.1/api/health" | sed 's/^/   /api\/health   /'
+printf '   /api/health    '
+rsh "curl -s -w '\n' http://127.0.0.1/api/health"
 CNT=$(rsh "curl -s http://127.0.0.1/api/notices | python3 -c 'import json,sys;print(len(json.load(sys.stdin)))' 2>/dev/null || echo ?")
 echo "   /api/notices   $CNT 건"
 echo "   [한글 확인]"
