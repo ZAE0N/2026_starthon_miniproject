@@ -67,10 +67,37 @@ MySQL 8.0.16 미만에서는 `CHECK` 가 조용히 무시되기 때문입니다.
 
 ### 점검 실행
 
+44개 항목을 확인하고 통과/실패 개수를 냅니다.
+
+**서버에서 (권장)** — 배포하면서 만들어진 `.venv` 가 이미 있습니다.
+
+```bash
+cd db/deploy
+. ./config.env
+ssh -i "${SSH_KEY/#\~/$HOME}" "$SSH_USER@$SERVER_IP" \
+  "cd ~/app/api && .venv/bin/python tests/check_chat_guards.py"
+```
+
+**내 컴퓨터에서** — `.venv` 를 먼저 만들어야 합니다.
+(`api/.venv` 는 서버에만 있습니다. 배포 스크립트가 만든 것입니다.)
+
 ```bash
 cd api
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 .venv/bin/python tests/check_chat_guards.py
 ```
 
-임시 SQLite 를 만들어 쓰므로 실제 DB 를 건드리지 않습니다.
-44개 항목을 확인하고 통과/실패 개수를 냅니다.
+**운영 DB 와 OpenAI 를 건드리지 않습니다.**
+스크립트가 `DATABASE_URL` 을 임시 SQLite 로 먼저 설정하고,
+`config.py` 의 `load_dotenv()` 는 기본이 `override=False` 라
+이미 설정된 환경변수를 덮지 않습니다. `OPENAI_API_KEY` 도 같은 방식으로
+빈 값이 유지되고, 가짜 openai 모듈을 주입하므로 실제 호출과 비용이 없습니다.
+
+### 코드를 고친 뒤에는 재배포해야 반영됩니다
+
+`main` 에 머지해도 서버는 그대로입니다. 서버는 배포할 때 받은 코드로 돕니다.
+
+```bash
+cd db/deploy && ./10-deploy-app.sh
+```
