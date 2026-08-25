@@ -153,6 +153,15 @@ if [ "$STATE" != "active" ]; then
 fi
 ok "uvicorn 실행 중 (127.0.0.1:$API_PORT)"
 
+# ── 6-1. 챗봇 캐시 비우기 ───────────────────────────────────────────────
+# chat_cache 는 같은 질문의 답을 저장해 둡니다. 코드를 고쳐도 캐시가 먼저
+# 응답하므로, 옛 답이 계속 나갑니다. 코드가 바뀌는 순간은 배포뿐이라
+# 무효화 지점도 여기 하나면 충분합니다. 캐시는 속도용이라 지워도 손실이 없습니다.
+say "챗봇 캐시 비우기"
+rsh "sudo mysql -B '$DB_NAME' -e 'DELETE FROM chat_cache;'" \
+  && ok "옛 답변 제거 (새 코드로 다시 채워집니다)" \
+  || warn "비우지 못했습니다 — 옛 답이 나오면 이 명령을 직접 실행하세요"
+
 # ── 7. nginx ────────────────────────────────────────────────────────────
 say "nginx 설정"
 rshin "sudo tee /etc/nginx/sites-available/inhatc >/dev/null" <<NGINXEOF
