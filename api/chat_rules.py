@@ -29,6 +29,23 @@ KEYWORDS = ["기숙사", "생활관", "주차", "도서관", "축제", "인턴",
 
 OUT_OF_SCOPE = re.compile(r"날씨|점심|밥|영화|노래|사랑|주식|로또")
 
+CATEGORIES = {"학사", "행사", "장학", "채용", "일반"}
+SUB_CATEGORIES = {"근로"}
+
+# 사용자가 보낼 수 있는 질문 길이. 넘으면 정중히 거절합니다.
+MAX_MESSAGE = 300
+# 화면 말풍선에 들어갈 답변 길이.
+MAX_ANSWER = 500
+
+
+def escape_like(value: str) -> str:
+    """LIKE 패턴에서 특수한 의미를 갖는 문자를 글자 그대로 만듭니다.
+
+    이게 없으면 '%' 한 글자만 입력해도 모든 공지가 걸려서
+    "'%' 관련 공지는 71건입니다" 같은 답이 나갑니다.
+    """
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 
 def _detect_category(q: str) -> str | None:
     for category, words in SYNONYMS.items():
@@ -69,8 +86,11 @@ def search(db: Session, category=None, sub_category=None, keyword=None, due_befo
     if sub_category:
         stmt = stmt.where(Notice.sub_category == sub_category)
     if keyword:
-        like = f"%{keyword}%"
-        stmt = stmt.where(or_(Notice.title.like(like), Notice.content.like(like)))
+        like = f"%{escape_like(keyword)}%"
+        stmt = stmt.where(or_(
+            Notice.title.like(like, escape="\\"),
+            Notice.content.like(like, escape="\\"),
+        ))
     if due_before:
         stmt = stmt.where(
             Notice.due_date.is_not(None),
