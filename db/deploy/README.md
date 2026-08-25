@@ -44,6 +44,7 @@ cp config.env.example config.env
 | `09-test-remote.sh` | 로컬에서 원격 접속 테스트 | 없음 |
 | `10-deploy-app.sh` | 프론트+API 배포 (nginx 단일 오리진) | **nginx·서비스 등록** |
 | `reseed.sh` | (반복) 스키마·시드 다시 넣기 | **테이블 재생성** |
+| `checksite.sh` | 배포된 사이트를 밖에서 점검 | 없음 |
 
 `00` `01` `04` `06` `09` 는 읽기만 하므로 몇 번을 돌려도 안전합니다.
 서버를 바꾸는 단계는 실행 전에 물어봅니다.
@@ -163,6 +164,24 @@ Lightsail 콘솔 → 인스턴스 → [네트워킹] → 규칙 추가 → **HTT
 ```bash
 ssh -i <키> ubuntu@<서버IP> "sudo journalctl -u inhatc-api -f"
 ```
+
+## 배포 확인 — checksite.sh
+
+배포된 주소를 **바깥에서** 점검합니다. 심사위원이 접속하는 것과 같은 경로입니다.
+
+```bash
+bash checksite.sh http://<서버IP>
+```
+
+확인하는 것
+
+- 화면 6개가 200 으로 열리는지
+- API 건수 (공지 71 · 일정 33 · 문서 20) 와 한글
+- **열려 있으면 안 되는 것** — `db/seed.sql` · `api/.env` · `.git/config` 이 404 인지
+- **★ 챗봇 추천 질문 4개가 실제로 목록을 좁히는지** (action 과 근거 건수까지)
+- 범위 밖 질문에는 목록이 안 바뀌는지
+
+마지막에 통과/실패 개수를 냅니다. 시연 직전 리허설에 쓰세요.
 
 ## 데이터를 바꿀 때 — reseed.sh
 
