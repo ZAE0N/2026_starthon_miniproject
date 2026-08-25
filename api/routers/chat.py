@@ -251,6 +251,14 @@ def _ask_openai(db: Session, message: str) -> dict | None:
         model=OPENAI_MODEL, messages=messages, temperature=0.2,
     )
     if not hits:
+        # 모델이 검색은 했지만 인자가 엉뚱해 0건이 나온 경우입니다.
+        # 도구를 아예 안 부른 경우(위)와 결과가 같으므로 안전망도 같이 겁니다.
+        # 이게 없으면 화면이 안 바뀌어 이 프로젝트의 핵심 기능이 죽습니다.
+        fallback = chat_rules.answer(db, message)
+        if fallback["sources"]:
+            log.info("모델 검색이 0건이라 규칙 결과를 씁니다: %s", message[:40])
+            fallback["answer"] = _clean_answer(fallback["answer"], "다시 물어봐 주세요.")
+            return fallback
         return {
             "answer": _clean_answer(
                 second.choices[0].message.content,
@@ -327,9 +335,15 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
         s if isinstance(s, dict) else _to_source(s) for s in result["sources"]
     ]
 
-    # OpenAI 가 죽어서 규칙으로 답한 것은 캐시하지 않습니다.
-    # 캐시하면 키가 복구된 뒤에도 그 질문은 계속 규칙 답변이 나갑니다.
-    if not degraded:
+    # 캐시는 속도용일 뿐이라, 조금이라도 미심쩍은 답은 남기지 않습니다.
+    #
+    #  · OpenAI 가 죽어서 규칙으로 답한 것 — 키가 복구된 뒤에도 계속 규칙 답이 나갑니다.
+    #  · 근거를 못 찾은 답 — 모델이 한 번 엉뚱하게 거절하면 그 답이 영구히 박힙니다.
+    #    실제로 "취업 관련 공지 보여줘" 의 거절이 캐시에 남아, 코드를 고치고
+    #    재배포한 뒤에도 옛 답이 계속 나갔습니다.
+    #
+    # 근거가 있는 답은 안정적이므로 그대로 캐시합니다.
+    if not degraded and result["sources"]:
         try:
             db.add(ChatCache(question_hash=key, question=message[:500],
                              response=json.dumps(result, ensure_ascii=False)))

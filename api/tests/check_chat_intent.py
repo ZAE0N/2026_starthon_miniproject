@@ -146,5 +146,34 @@ d = ask("채용 공지 보여줘")
 chk("모델 인자 사용", d["action"]["category"] == "채용", d["action"]["category"])
 chk("모델 답변 사용", "검색 결과를 바탕으로" in d["answer"], d["answer"][:30])
 
+print("\n\033[1;36m== 5. 모델이 검색은 했지만 0건일 때\033[0m")
+# 도구를 아예 안 부른 것과 결과가 같습니다. 안전망이 여기에도 걸려야 합니다.
+SCRIPT["first"] = calls({"keyword": "존재하지않는낱말zzz"})
+d = ask("취업 관련 공지 보여줘")
+a = d["action"]
+chk("규칙 결과로 대체됨", a["type"] == "filter" and d["sources"],
+    f"cat={a['category']} kw={a['keyword']} 근거={len(d['sources'])}")
+
+d = ask("오늘 점심 뭐 먹지?")
+chk("범위 밖은 0건이어도 거절", d["action"]["type"] == "none", d["action"]["type"])
+
+print("\n\033[1;36m== 6. 근거 없는 답은 캐시하지 않는다\033[0m")
+
+
+def cache_rows():
+    con = sqlite3.connect(DB)
+    n = con.execute("SELECT COUNT(*) FROM chat_cache").fetchone()[0]
+    con.close()
+    return n
+
+
+SCRIPT["first"] = refuses("공지사항만 안내할 수 있습니다.")
+ask("날씨 어때?")                                  # ask 가 먼저 캐시를 비웁니다
+chk("거절은 캐시에 안 남음", cache_rows() == 0, f"{cache_rows()}행")
+
+SCRIPT["first"] = calls({"category": "채용"})
+ask("채용 공지 보여줘")
+chk("근거 있는 답은 캐시됨", cache_rows() == 1, f"{cache_rows()}행")
+
 print(f"\n\033[1m통과 {PASS} · 실패 {FAIL}\033[0m")
 sys.exit(0 if FAIL == 0 else 1)
