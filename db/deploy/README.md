@@ -43,6 +43,7 @@ cp config.env.example config.env
 | `08-network.sh` | bind-address, ufw | **설정 변경** |
 | `09-test-remote.sh` | 로컬에서 원격 접속 테스트 | 없음 |
 | `10-deploy-app.sh` | 프론트+API 배포 (nginx 단일 오리진) | **nginx·서비스 등록** |
+| `11-setup-https.sh` | (선택) 도메인에 무료 인증서 → https | **인증서 발급** |
 | `reseed.sh` | (반복) 스키마·시드 다시 넣기 | **테이블 재생성** |
 | `checksite.sh` | 배포된 사이트를 밖에서 점검 | 없음 |
 
@@ -182,6 +183,74 @@ bash checksite.sh http://<서버IP>
 - 범위 밖 질문에는 목록이 안 바뀌는지
 
 마지막에 통과/실패 개수를 냅니다. 시연 직전 리허설에 쓰세요.
+
+**두 번 돌리세요.** 챗봇 응답은 캐시됩니다. 첫 번째는 모델 경로를,
+두 번째는 캐시 경로를 지납니다. 둘 다 통과해야 심사 중 어느 쪽으로 흘러도 안전합니다.
+
+## (선택) https 붙이기 — 11-setup-https.sh
+
+도메인을 사서 `http://<IP>/` 를 `https://내도메인/` 으로 바꿉니다.
+
+**안 해도 됩니다.** 로그인도 개인정보 입력도 없는 조회용 페이지라
+심사 기준 3가지는 `http` 로도 전부 충족됩니다. 시간이 남을 때만 하세요.
+
+```bash
+echo 'DOMAIN=내도메인' >> config.env
+./11-setup-https.sh        # DNS 확인 → 예행 연습 → 발급
+./10-deploy-app.sh         # ★ nginx 설정은 이쪽이 씁니다
+bash checksite.sh https://내도메인
+```
+
+먼저 도메인 등록처에서 A 레코드를 고정 IP 로 가리키고, Lightsail 콘솔에서
+**443 포트**를 엽니다 (80 때와 같은 자리).
+
+```
+Type: A    Name: @      Value: <고정 IP>
+Type: A    Name: www    Value: <고정 IP>
+```
+
+도메인이 없어도 자물쇠만 원한다면 `DOMAIN=15-165-117-153.sslip.io` 처럼
+쓸 수 있습니다. 무료이고 즉시 되지만 주소에 IP 가 보입니다.
+
+### 왜 `certbot --nginx` 를 쓰지 않나
+
+`10-deploy-app.sh` 가 배포마다 `/etc/nginx/sites-available/inhatc` 를
+**통째로 다시 씁니다.** `certbot --nginx` 는 바로 그 파일을 고쳐서 https 를
+넣으므로, 나중에 배포를 한 번만 더 하면 **인증서 설정이 지워지고 http 로
+돌아갑니다.** 시연 직전에 재배포했다가 이걸 만나면 최악입니다.
+
+그래서 역할을 갈라 뒀습니다.
+
+| | |
+|---|---|
+| `11-setup-https.sh` | `certbot certonly --webroot` — **인증서만** 받습니다 |
+| `10-deploy-app.sh` | nginx 설정의 **유일한 주인.** 인증서가 있으면 https 블록을, 없으면 http 블록을 씁니다 |
+
+`python3-certbot-nginx` 는 일부러 설치하지 않습니다. 있으면 실수로 `--nginx` 를
+쓰게 되기 때문입니다.
+
+**꼭 확인하세요** — 발급 후 재배포해도 https 가 유지되는지.
+
+```bash
+./10-deploy-app.sh
+bash checksite.sh https://내도메인      # 여전히 통과해야 합니다
+```
+
+### `.well-known` 이 막히면 발급이 안 됩니다
+
+노출 차단 규칙 `location ~ /\. { deny all; }` 은 `.env` 를 막으려고 넣은 것인데,
+Let's Encrypt 가 소유 확인에 쓰는 `/.well-known/acme-challenge/` **도 점으로
+시작합니다.** 그대로 두면 발급도, 90일 뒤 자동 갱신도 실패합니다.
+
+`10-deploy-app.sh` 가 deny 보다 먼저 잡히는 예외를 넣어 둡니다
+(`^~` 는 정규식 location 보다 우선합니다). `.env` 차단은 그대로입니다.
+
+### 발급 전에 DNS 를 먼저 확인하는 이유
+
+Let's Encrypt 는 **실패도 횟수를 셉니다** (한 시간에 5번). DNS 가 아직 안 붙은
+상태로 시도하면 한 시간 동안 막혀서, 정작 준비가 끝났을 때 발급을 못 받습니다.
+그래서 `11` 은 DNS 가 이 서버를 가리킬 때만 진행하고, 실제 발급 전에
+스테이징으로 예행 연습(`--dry-run`)을 한 번 합니다.
 
 ## 데이터를 바꿀 때 — reseed.sh
 

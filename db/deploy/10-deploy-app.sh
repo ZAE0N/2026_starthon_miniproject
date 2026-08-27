@@ -163,13 +163,15 @@ rsh "sudo mysql -B '$DB_NAME' -e 'DELETE FROM chat_cache;'" \
   || warn "비우지 못했습니다 — 옛 답이 나오면 이 명령을 직접 실행하세요"
 
 # ── 7. nginx ────────────────────────────────────────────────────────────
+#
+# ★ 이 스크립트가 nginx 설정의 유일한 주인입니다.
+#   배포할 때마다 통째로 다시 쓰므로, certbot 이 이 파일을 고치게 두면
+#   다음 배포에서 https 설정이 사라집니다. 그래서 11-setup-https.sh 는
+#   인증서만 발급받고(certonly), 설정은 여기서 씁니다.
 say "nginx 설정"
-rshin "sudo tee /etc/nginx/sites-available/inhatc >/dev/null" <<NGINXEOF
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
 
+# 사이트 본문 — http 블록과 https 블록이 똑같이 씁니다.
+BODY=$(cat <<BODYEOF
     root $WEB_DIR;
     index index.html;
 
@@ -182,6 +184,7 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 30s;
     }
 
@@ -189,10 +192,64 @@ server {
         try_files \$uri \$uri/ =404;
     }
 
-    # 혹시 모를 노출 차단
+    # certbot 발급·갱신 통로.
+    # ^~ 는 아래 정규식 location 보다 먼저 잡힙니다. 이게 없으면
+    # /.well-known/... 이 점으로 시작해 deny 에 걸려 인증서가 안 나옵니다.
+    location ^~ /.well-known/acme-challenge/ {
+        root $WEB_DIR;
+        default_type "text/plain";
+    }
+
+    # 혹시 모를 노출 차단 (.env, .git 등)
     location ~ /\\. { deny all; }
+BODYEOF
+)
+
+CERT="/etc/letsencrypt/live/${DOMAIN:-none}/fullchain.pem"
+if [ -n "${DOMAIN:-}" ] && rsh "sudo test -f $CERT"; then
+  echo "   인증서 있음 → https ($DOMAIN)"
+  rshin "sudo tee /etc/nginx/sites-available/inhatc >/dev/null" <<NGINXEOF
+# http 로 온 요청은 https 로 넘깁니다. 갱신 통로만 예외입니다.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name $DOMAIN www.$DOMAIN _;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root $WEB_DIR;
+        default_type "text/plain";
+    }
+    location / { return 301 https://$DOMAIN\$request_uri; }
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name $DOMAIN www.$DOMAIN _;
+
+    ssl_certificate     /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+$BODY
 }
 NGINXEOF
+else
+  [ -n "${DOMAIN:-}" ] && echo "   인증서 없음 → http (./11-setup-https.sh 로 발급)" \
+                       || echo "   DOMAIN 미설정 → http"
+  rshin "sudo tee /etc/nginx/sites-available/inhatc >/dev/null" <<NGINXEOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+$BODY
+}
+NGINXEOF
+fi
 rsh "sudo ln -sf /etc/nginx/sites-available/inhatc /etc/nginx/sites-enabled/inhatc \
      && sudo rm -f /etc/nginx/sites-enabled/default"
 rsh "sudo nginx -t" 2>&1 | sed 's/^/   /' || die "nginx 설정 오류"
