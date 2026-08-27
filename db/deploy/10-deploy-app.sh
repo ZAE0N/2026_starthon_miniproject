@@ -178,6 +178,27 @@ BODY=$(cat <<BODYEOF
     # 한글이 깨지지 않도록
     charset utf-8;
 
+    # ── 압축 ────────────────────────────────────────────────────────────
+    # Ubuntu 기본 nginx.conf 는 gzip on 이지만 gzip_types 가 주석 처리돼 있어
+    # 사실상 text/html 만 줄입니다. CSS·JS·JSON 이 전부 생짜로 나갑니다.
+    # 이 사이트는 js/data.js 48KB + API 40KB 라 효과가 큽니다 (공지 JSON 77% 감소).
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 5;
+    gzip_min_length 512;
+    gzip_proxied any;                       # /api 프록시 응답도 압축합니다
+    gzip_types text/plain text/css application/json application/javascript
+               text/javascript application/xml image/svg+xml;
+
+    # ── 정적 파일 캐시 ──────────────────────────────────────────────────
+    # 파일 이름에 해시가 없으므로 길게 잡으면 재배포가 안 먹습니다.
+    # 10분 + ETag 재검증이면 심사 중 여러 페이지를 눌러도 다시 안 받고,
+    # 재배포해도 금방 갱신됩니다.
+    location ~* \\.(css|js)\$ {
+        # expires 와 add_header 를 같이 쓰면 Cache-Control 이 두 줄 나갑니다.
+        add_header Cache-Control "public, max-age=600";
+    }
+
     # API 는 uvicorn 으로 넘깁니다. 같은 주소라 CORS 가 필요 없습니다.
     location /api/ {
         proxy_pass http://127.0.0.1:$API_PORT;
@@ -223,8 +244,11 @@ server {
 }
 
 server {
-    listen 443 ssl default_server;
-    listen [::]:443 ssl default_server;
+    # http2 는 요청 11개를 한 연결에서 겹쳐 보내 첫 화면을 앞당깁니다.
+    # nginx 1.25.1+ 는 'http2 on;' 을 권하지만 listen 파라미터도 계속 동작합니다.
+    # 1.18(22.04)·1.24(24.04) 양쪽에서 되는 쪽을 씁니다.
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
     server_name $DOMAIN www.$DOMAIN _;
 
     ssl_certificate     /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
