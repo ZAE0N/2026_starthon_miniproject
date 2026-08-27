@@ -74,22 +74,9 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 
 인증서는 Let's Encrypt 이고 90일마다 자동 갱신됩니다.
 
-| | |
-|---|---|
-| 프론트 | 순수 HTML · CSS · JavaScript (빌드 도구 없음) |
-| 백엔드 | FastAPI · SQLAlchemy 2.0 · Pydantic v2 |
-| DB | MySQL 8 (utf8mb4) |
-| AI | OpenAI Function Calling |
-| 배포 | AWS Lightsail · nginx · systemd |
-
-`git pull` 후 파일을 복사하면 바로 배포할 수 있도록 설정하였습니다.
-
-(파이프라인 도입까지 고민하였지만 가볍게 하는 미니 프로젝트이기 때문에 지양하였습니다.)
-
 ### API
 
 | | |
-|---|---|
 | `GET /api/notices` | 공지 목록 (`category` · `subCategory` · `q` · `dueBefore` · `limit`) |
 | `GET /api/notices/{id}` | 공지 상세 |
 | `POST /api/notices` · `PUT` · `DELETE` | 작성 · 수정 · 삭제 |
@@ -113,7 +100,7 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 
 챗봇은 지금 보고 있는 화면에 따라 다르게 동작합니다.
 
-| 지금 화면 | 챗봇 답변 |
+| 현재 화면 | 챗봇 답변 |
 |---|---|
 | 홈 · 공지 목록 | 그 자리에서 목록이 걸러짐 (이동 없음) |
 | 상세 · 검색 · 안내 | "목록에서 결과 보기" 링크 표시 |
@@ -123,6 +110,19 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 ## 서버 배포
 
 개인이 가지고 있는 AWS Lightsail 인스턴스 서버에서 배포하였습니다.
+
+### 기술 스택
+
+| | |
+| 프론트 | 순수 HTML · CSS · JavaScript (빌드 도구 없음) |
+| 백엔드 | FastAPI · SQLAlchemy 2.0 · Pydantic v2 |
+| DB | MySQL 8 (utf8mb4) |
+| AI | OpenAI Function Calling |
+| 배포 | AWS Lightsail · nginx · systemd |
+
+`git pull` 후 파일을 복사하면 바로 배포할 수 있도록 설정하였습니다.
+
+(파이프라인 도입까지 고민하였지만 가볍게 하는 미니 프로젝트이기 때문에 지양하였습니다.)
 
 ## 기타
 
