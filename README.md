@@ -76,7 +76,8 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 
 ### API
 
-| | |
+|API|역할|
+|---|---|
 | `GET /api/notices` | 공지 목록 (`category` · `subCategory` · `q` · `dueBefore` · `limit`) |
 | `GET /api/notices/{id}` | 공지 상세 |
 | `POST /api/notices` · `PUT` · `DELETE` | 작성 · 수정 · 삭제 |
@@ -88,8 +89,8 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 
 ## 화면
 
-| 파일 | 화면 | 비고 |
-|---|---|---|
+| 파일 | 화면 |
+|---|---|
 | `index.html` | 홈
 | `notices.html` | 공지 목록
 | `notice.html` | 공지 상세
@@ -114,6 +115,7 @@ nginx :443 ────┬── /        →  /var/www/inhatc     (HTML · CSS 
 ### 기술 스택
 
 | | |
+|---|---|
 | 프론트 | 순수 HTML · CSS · JavaScript (빌드 도구 없음) |
 | 백엔드 | FastAPI · SQLAlchemy 2.0 · Pydantic v2 |
 | DB | MySQL 8 (utf8mb4) |
