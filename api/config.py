@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
-# 접속 문자열. 없으면 로컬 SQLite 로 떨어져서 DB 없이도 서버가 뜹니다.
+# 접속 문자열. 필수입니다 — 비어 있으면 db.py 가 오류를 내고 서버가 뜨지 않습니다.
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 # 챗봇용. 비어 있으면 규칙 기반으로 동작합니다.
