@@ -6,6 +6,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from db import get_db
+from clock import today
 from models import Notice
 from schemas import NoticeCreate, NoticeOut, NoticeUpdate
 
@@ -51,7 +52,7 @@ def list_notices(
         stmt = stmt.where(
             Notice.due_date.is_not(None),
             Notice.due_date <= due_before,
-            Notice.due_date >= date.today(),
+            Notice.due_date >= today(),
         )
     # 목록 기본 정렬: 고정 → 최신 → 번호 (프론트 notices.js 와 같은 규칙)
     stmt = stmt.order_by(Notice.is_pinned.desc(), Notice.created_at.desc(), Notice.id.desc())

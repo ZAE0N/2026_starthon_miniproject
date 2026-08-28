@@ -20,6 +20,7 @@ import chat_rules
 from chat_rules import CATEGORIES, MAX_ANSWER, MAX_MESSAGE, SUB_CATEGORIES
 from config import OPENAI_API_KEY, OPENAI_MODEL
 from db import get_db
+from clock import today as _today
 from models import ChatCache, Notice
 from schemas import ChatRequest, ChatResponse
 
@@ -174,7 +175,18 @@ def _pick_single(hits: list[Notice], keyword: str | None) -> Notice | None:
 
 
 def _cache_key(message: str) -> str:
-    return hashlib.sha256(message.strip().encode("utf-8")).hexdigest()
+    """질문 + 오늘 날짜로 열쇠를 만듭니다.
+
+    ★ 날짜를 꼭 섞어야 합니다. 질문 글자만 해싱하면 '이번 주 마감인 장학금'
+      같은 답이 어제 것 그대로 나옵니다. 답변과 근거 카드는 어제 기준(3건)인데
+      왼쪽 목록은 브라우저가 오늘 기준으로 다시 거르므로(js/notices.js:34)
+      화면에는 '총 2건' 이 뜹니다 — 실제로 그렇게 어긋났습니다.
+
+    날짜가 안 걸린 질문까지 하루에 한 번은 다시 계산됩니다. 캐시는 비용과
+    속도를 위한 것일 뿐이라 그 정도는 감수하고, 대신 어긋날 수가 없습니다.
+    """
+    return hashlib.sha256(
+        f"{_today()}|{message.strip()}".encode("utf-8")).hexdigest()
 
 
 def _ask_openai(db: Session, message: str) -> dict | None:
@@ -186,7 +198,7 @@ def _ask_openai(db: Session, message: str) -> dict | None:
         return None
 
     client = OpenAI(api_key=OPENAI_API_KEY, timeout=15.0)
-    today = date.today()
+    today = _today()
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT + f"\n\n오늘은 {today} 이다."},
         {"role": "user", "content": message},

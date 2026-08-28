@@ -85,7 +85,7 @@ onDataReady(function () {
   mountLayout("정보광장");
 
   if (!isAdmin()) {
-    toast("권한이 없습니다. 푸터의 '관리자'를 눌러 주세요", true);
+    toast("권한이 없습니다. 오른쪽 위 '관리자' 토글을 켜 주세요", true);
     setTimeout(function () { location.href = "notices.html"; }, 1200);
     return;
   }

@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from clock import today as _today
 from models import Notice
 
 SYNONYMS = {
@@ -63,7 +64,7 @@ def _detect_keyword(q: str) -> str | None:
 
 
 def _detect_due(q: str) -> date | None:
-    today = date.today()
+    today = _today()
     if re.search(r"이번\s*주|금주|곧|임박|마감", q):
         return today + timedelta(days=7)
     if re.search(r"오늘|내일|급", q):
@@ -95,7 +96,7 @@ def search(db: Session, category=None, sub_category=None, keyword=None, due_befo
         stmt = stmt.where(
             Notice.due_date.is_not(None),
             Notice.due_date <= due_before,
-            Notice.due_date >= date.today(),
+            Notice.due_date >= _today(),
         )
     stmt = stmt.order_by(Notice.is_pinned.desc(), Notice.created_at.desc(), Notice.id.desc())
     return list(db.scalars(stmt).all())

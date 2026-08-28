@@ -15,6 +15,7 @@
     cd api
     .venv/bin/python tests/check_chat_intent.py
 """
+import hashlib
 import json
 import os
 import sqlite3
@@ -174,6 +175,54 @@ chk("거절은 캐시에 안 남음", cache_rows() == 0, f"{cache_rows()}행")
 SCRIPT["first"] = calls({"category": "채용"})
 ask("채용 공지 보여줘")
 chk("근거 있는 답은 캐시됨", cache_rows() == 1, f"{cache_rows()}행")
+
+print("\n\033[1;36m== 7. 어제 캐시된 답을 오늘 쓰면 안 된다\033[0m")
+# 실제로 있었던 일입니다.
+#   챗봇: "2026-09-03 이전 마감인 장학 공지는 3건입니다"  ← 어제 저장된 답
+#   목록: "총 2건"                                       ← 브라우저가 오늘 다시 거름
+# 캐시 열쇠가 질문 글자만 해싱하면 '이번 주 마감' 같은 답이 하루 지나 어긋납니다.
+
+
+def seed_cache(question, answer):
+    """옛 방식(질문만 해싱)으로 캐시 한 줄을 심습니다."""
+    con = sqlite3.connect(DB)
+    con.execute("DELETE FROM chat_cache")
+    con.execute(
+        "INSERT INTO chat_cache (question_hash, question, response, hit_count,"
+        " created_at) VALUES (?, ?, ?, 0, datetime('now', '-1 day'))",
+        (hashlib.sha256(question.strip().encode("utf-8")).hexdigest(), question,
+         json.dumps({"answer": answer,
+                     "action": {"type": "filter", "category": "장학",
+                                "subCategory": None, "keyword": None,
+                                "dueBefore": "1999-01-01", "noticeId": None},
+                     "sources": [{"id": 1, "title": "어제 것", "dueDate": None}]},
+                    ensure_ascii=False)))
+    con.commit()
+    con.close()
+
+
+STALE = "어제 캐시된 답입니다"
+SCRIPT["first"] = calls({"category": "장학", "due_within_days": 7})
+seed_cache("이번 주 마감인 장학금 알려줘", STALE)
+d = client.post("/api/chat", json={"message": "이번 주 마감인 장학금 알려줘"}).json()
+chk("어제 답이 안 나옴", STALE not in d["answer"], d["answer"][:38])
+chk("어제 dueBefore 가 안 나옴", d["action"]["dueBefore"] != "1999-01-01",
+    f"dueBefore={d['action']['dueBefore']}")
+
+# 같은 날 안에서는 캐시가 계속 들어야 합니다. 고치다가 캐시를 죽이면 안 됩니다.
+con = sqlite3.connect(DB)
+con.execute("DELETE FROM chat_cache")
+con.commit()
+con.close()
+SCRIPT["first"] = calls({"category": "채용"})
+client.post("/api/chat", json={"message": "채용 공지 보여줘"})
+client.post("/api/chat", json={"message": "채용 공지 보여줘"})
+con = sqlite3.connect(DB)
+rows, hits = con.execute(
+    "SELECT COUNT(*), COALESCE(MAX(hit_count), 0) FROM chat_cache").fetchone()
+con.close()
+chk("같은 날 두 번째 질문은 캐시 적중", rows == 1 and hits >= 1,
+    f"{rows}행 · 적중 {hits}회")
 
 print(f"\n\033[1m통과 {PASS} · 실패 {FAIL}\033[0m")
 sys.exit(0 if FAIL == 0 else 1)
