@@ -71,6 +71,12 @@ function renderHeader(current) {
   return (
     '<div class="utilbar"><div class="container">' +
       "<span>PORTAL</span><span>ENGLISH</span><span class=\"spacer\"></span><span>사이트맵</span>" +
+      /* 관리자 토글. 지금 관리자 모드인지 어느 화면에서나 여기서 보입니다. */
+      '<button class="admin-toggle" id="adminToggle" onclick="adminToggle()"' +
+        ' role="switch" aria-checked="false" aria-label="관리자 모드">' +
+        '<span class="track"><span class="knob"></span></span>' +
+        '<span class="txt">관리자</span>' +
+      "</button>" +
     "</div></div>" +
     '<header class="gnb"><div class="container">' +
       '<a class="logo" href="index.html"><span class="mark"></span>' + window.SCHOOL.name + "</a>" +
@@ -93,24 +99,33 @@ function renderFooter() {
       "<div><h2>" + window.SCHOOL.name + "</h2>" +
       "<p>" + window.SCHOOL.address + " &nbsp;|&nbsp; 대표전화 " + window.SCHOOL.tel + "</p>" +
       "<p>학습 목적으로 만든 비공식 사이트이며, 공지 내용은 실제 공지가 아닌 예시입니다.</p></div>" +
-      '<span class="spacer"></span>' +
-      '<button class="btn-admin" onclick="adminOn()">관리자</button>' +
     "</div></footer>"
   );
 }
 
 /* ── CM-04 관리자 모드 (비밀번호 없음) ── */
+/* 토스트를 띄우지 않습니다. 토스트는 화면 오른쪽 위에 뜨는데
+   그 자리가 바로 이 토글 자리라, 켜졌다고 알리면서 정작 켜진 토글을 가립니다.
+   토글이 초록으로 바뀌고 관리자 바가 내려오는 것으로 충분히 보입니다. */
 function adminOn() {
   sessionStorage.setItem("admin", "1");
   document.body.classList.add("is-admin");
-  toast("관리자 모드가 켜졌습니다");
+  syncAdminToggle();
 }
 function adminOff() {
   sessionStorage.removeItem("admin");
   document.body.classList.remove("is-admin");
-  toast("관리자 모드를 종료했습니다");
+  syncAdminToggle();
 }
+function adminToggle() { if (isAdmin()) adminOff(); else adminOn(); }
 function isAdmin() { return sessionStorage.getItem("admin") === "1"; }
+
+/* 켜짐/꺼짐 모양은 body.is-admin 으로 CSS 가 그립니다.
+   여기서는 화면 낭독기가 읽을 상태만 맞춰 줍니다. */
+function syncAdminToggle() {
+  var t = document.getElementById("adminToggle");
+  if (t) t.setAttribute("aria-checked", isAdmin() ? "true" : "false");
+}
 
 /* ── CM-05 토스트 ── */
 function toast(msg, isError) {
@@ -319,6 +334,7 @@ function mountLayout(currentMenu) {
   if (main) main.insertAdjacentHTML("beforeend", renderFooter());
   document.body.insertAdjacentHTML("beforeend", renderChat());
   if (isAdmin()) document.body.classList.add("is-admin");
+  syncAdminToggle();
 
   var t = $("#gnbToggle");
   if (t) t.addEventListener("click", function () { $("#gnbMenu").classList.toggle("open"); });
